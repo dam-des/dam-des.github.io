@@ -80,6 +80,38 @@
       h1 { font-size: 27px; }
       p.tag { font-size: 16px; }
     }
+
+    /* ── Nouveautés ─────────────────────────────────────────────────── */
+    .changelog { margin-top: 34px; text-align: left; }
+    .changelog h2 {
+      font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+      color: var(--muted); margin: 0 0 14px; text-align: center;
+    }
+    .version {
+      border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+    }
+    .version + .version { margin-top: 12px; }
+    .version-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; margin-bottom: 8px;
+    }
+    .version-num { font-weight: 800; font-size: 15px; color: var(--accent); }
+    .version-date { font-size: 12px; color: var(--muted); }
+    .version ul { margin: 0; padding-left: 20px; }
+    .version li { font-size: 14px; line-height: 1.55; margin-bottom: 4px; }
+    .version li:last-child { margin-bottom: 0; }
+
+    .older-versions { margin-top: 12px; }
+    .older-versions > summary {
+      cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted);
+      padding: 6px 2px; list-style: none; display: flex; align-items: center; gap: 6px;
+    }
+    .older-versions > summary::-webkit-details-marker { display: none; }
+    .older-versions > summary::before { content: '▸'; transition: transform .15s ease; display: inline-block; }
+    .older-versions[open] > summary::before { transform: rotate(90deg); }
+    .older-versions > summary:hover { color: var(--fg); }
+    .older-versions .version { margin-top: 10px; opacity: .9; }
   </style>
 </head>
 <body>
@@ -105,6 +137,64 @@
         <span class="badge-new">Nouveau</span>
       </a>
     </div>
+
+    <section class="changelog">
+      <h2>Nouveautés</h2>
+      <div class="version">
+        <div class="version-head">
+          <span class="version-num">v1.3.0</span>
+          <span class="version-date">2 septembre 2026</span>
+        </div>
+        <ul>
+          <li>Matériel valorisé : cote automatique de tes consoles via eBay</li>
+          <li>Reconnaissance de codes-barres nettement plus fiable</li>
+          <li>Recherche par les noms de jeux alternatifs (import US/PAL)</li>
+          <li>Sélecteur de console avec recherche intégrée</li>
+          <li>Prix payé distinct de la valeur estimée</li>
+        </ul>
+      </div>
+
+      <details class="older-versions">
+        <summary>Voir les versions précédentes</summary>
+
+        <div class="version">
+          <div class="version-head">
+            <span class="version-num">v1.2.0</span>
+            <span class="version-date">20 août 2026</span>
+          </div>
+          <ul>
+            <li>Nouveau parcours d'ajout de jeu : Titre → Édition → Console (éditions Gold/GOTY/Collector, région)</li>
+            <li>Connexion Google et Apple</li>
+            <li>Corrections de stabilité et d'affichage</li>
+          </ul>
+        </div>
+
+        <div class="version">
+          <div class="version-head">
+            <span class="version-num">v1.1.0</span>
+            <span class="version-date">11 août 2026</span>
+          </div>
+          <ul>
+            <li>Favoris ⭐ sur les jeux, avec filtre dédié</li>
+            <li>Recherche instantanée multi-champ dans la bibliothèque</li>
+            <li>Fiche détail enrichie : valeur eBay, mini-courbe de prix</li>
+            <li>Reconnaissance de jaquette au scan fiabilisée</li>
+            <li>Mot de passe oublié directement dans l'app</li>
+            <li>Accessibilité renforcée sur les 5 thèmes</li>
+          </ul>
+        </div>
+
+        <div class="version">
+          <div class="version-head">
+            <span class="version-num">v1.0.0</span>
+            <span class="version-date">2026</span>
+          </div>
+          <ul>
+            <li>Première version publique : collection, wishlist, scan, estimation de prix eBay, thèmes rétro</li>
+          </ul>
+        </div>
+      </details>
+    </section>
 
     <div class="legal">
       <a href="./gamoria-legal/">Politique de confidentialité &amp; mentions légales</a>
