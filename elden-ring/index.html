@@ -169,7 +169,7 @@ footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70
       <div class="maptools" id="chips"></div>
       <svg class="map" id="map" viewBox="0 0 1000 700" role="img" aria-label="Carte schématique des Terres Intermédiaires avec les étapes numérotées"></svg>
       <div class="maptools" style="margin-top:8px">
-        <span class="note" style="margin:0">Carte schématique. Repère de grille (ex. C3) = colonne A-J, ligne 1-7.</span>
+        <span class="note" style="margin:0">Carte schématique (pas la vraie carte). Pour te repérer en jeu, utilise « Repères sur le terrain » dans chaque étape.</span>
         <div class="zoom"><button type="button" id="zin" aria-label="Zoom avant">+</button><button type="button" id="zout" aria-label="Zoom arrière">−</button><button type="button" id="zr" aria-label="Réinitialiser la carte">⟲</button></div>
       </div>
     </div>
@@ -211,7 +211,7 @@ footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70
       <h3>Position</h3>
       <ul>
         <li>Tu es en Liurnia, dans la zone des lacs. Nécrolimbe est presque entièrement débloqué, Caelid en partie.</li>
-        <li>Prochaines étapes de la route : voir les étapes 8 à 11 (Liurnia, Loretta, Académie, Rennala).</li>
+        <li>Prochaines étapes de la route : voir les étapes 8 à 12 (Liurnia, clé de l'Académie, Loretta, Académie, Rennala).</li>
       </ul>
     </div>
     <div class="card">
@@ -287,9 +287,12 @@ var STEPS = [
  { ph:"liurnia", t:"Arrivée en Liurnia", zone:"Liurnia, contrée lacustre", x:255, y:322, grace:"Sites de grâce du lac (Liurnia)", lvl:"35–45",
    go:["Prends la route nord-ouest depuis Nécrolimbe.","Débloque les fragments de carte aux stèles.","Tu y es déjà : vérifie que tu as bien ouvert tous les sites de grâce autour des lacs."],
    get:["Fragments de carte (Liurnia)"], en:"Liurnia of the Lakes Map fragment", tip:"C'est ta zone actuelle (niveau 41 : parfaitement adapté)." },
- { ph:"liurnia", t:"Loretta, chevaleresse royale", zone:"Liurnia · Manoir de Caria", x:335, y:238, grace:"Manoir de Caria (Caria Manor)", lvl:"38–50", boss:"Loretta, chevaleresse royale (Royal Knight Loretta)",
+ { ph:"liurnia", t:"Clé de pierre d'éclat de l'Académie", zone:"Liurnia · ouest de l'Académie", x:150, y:262, grace:"Quartier du temple (Village aux portes de l'académie)", lvl:"35–45",
+   go:["Va à l'ouest de l'Académie, au nord du site de grâce Quartier du temple.","La clé est dans le nid d'un dragon de pierre d'éclat. Approche sur Torrent, ramasse-la et fuis tout de suite."],
+   get:["Clé de pierre d'éclat de l'Académie (Academy Glintstone Key)"], verify:true, tip:"Sans cette clé, la barrière magique de l'Académie reste fermée.", en:"Academy Glintstone Key Smarag dragon Temple Quarter Village of the Albinaurics" },
+ { ph:"liurnia", t:"Loretta, chevaleresse royale (facultatif)", zone:"Liurnia · Manoir de Caria", x:335, y:238, grace:"Grande porte du Manoir de Caria", lvl:"38–50", boss:"Loretta, chevaleresse royale (Royal Knight Loretta)",
    go:["Traverse le Manoir de Caria jusqu'à Loretta.","Elle est à cheval et lance des projectiles magiques : reste au corps à corps quand elle démonte."],
-   get:["Clé de pierre d'éclat de l'Académie (Academy Glintstone Key)"], en:"Caria Manor Loretta Academy Glintstone Key", tip:"Sans cette clé, impossible d'entrer à l'Académie de Raya Lucaria." },
+   get:["Magie Grand Arc de Loretta","Cendres de guerre : Entaille de Loretta"], en:"Caria Manor Loretta Loretta's Greatbow Loretta's Slash", tip:"Boss facultatif : tu peux le faire avant ou après l'Académie. Il ne donne pas la clé de l'Académie." },
  { ph:"liurnia", t:"Académie de Raya Lucaria", zone:"Liurnia · nord-ouest", x:188, y:212, grace:"Académie de Raya Lucaria", lvl:"38–50", boss:"Loup cramoisi de Radagon (Red Wolf of Radagon)",
    go:["Utilise la clé à la porte de l'Académie.","Traverse les salles jusqu'au Loup cramoisi de Radagon : il est rapide, garde ta distance et esquive."],
    get:["Accès au boss de l'Académie"], en:"Raya Lucaria Academy Red Wolf" },
@@ -350,6 +353,21 @@ var STEPS = [
    get:["Fin du jeu"], en:"Ashen Capital Radagon Elden Beast Elden Throne" }
 ];
 
+
+var NEAR = {
+ "Melina et Torrent": ["Point de départ : site de grâce La Première Étape (Melina te parle là)."],
+ "Église d'Elleh": ["Église en ruines au nord-nord-ouest du départ : site de grâce, marchand itinérant (Kalé) et enclume juste à côté."],
+ "Margit, le déchu": ["Route nord depuis Nécrolimbe : forêt patrouillée par des soldats de Godrick.","Effigie de Marika à la lisière de la forêt (point de reprise).","Ruines avec chariots de butin, puis site de grâce au nord-ouest des ruines, avant la grande arche au pied des falaises."],
+ "Traverser le Château de Voilorage": ["Sites de grâce : Falaise de Voilorage, Échauguette, Chambre voisine de l'ascenseur.","Cabane de Valorage : la femme échange le Souvenir du cocon contre une Graine dorée."],
+ "Godrick le greffé": ["Tour divine au nord-est de Nécrolimbe : restaure la Grande Rune de Godrick."],
+ "Arrivée en Liurnia": ["Église d'Irith : première église rencontrée en descendant sur la droite (Thops).","Camp de soldats de Godrick au carrefour.","Relais en ruine, à l'est du Lac d'Agheel (Sellen la sorcière).","Ruines de Laskyar au nord-ouest du camp, avec un autel.","Village englouti : un arbrisseau près du village contient une Graine dorée."],
+ "Clé de pierre d'éclat de l'Académie": ["Village aux portes de l'académie : site de grâce central.","Quartier du temple en ruines au nord-ouest (site de grâce, 3 bourgeons cristallins).","Ruines tombées dans le lac : site de grâce à l'ouest (4 tournesols dorés ternis).","Pont du village au sud, Cabane de l'artiste au sud-est, Église de la rose à l'ouest."],
+ "Loretta, chevaleresse royale (facultatif)": ["Pars de l'Île du sorcier vers le nord, jusqu'à la rive nord du lac de Liurnia.","Ruines du domaine royal : frappe le mur secret pour ouvrir la Route du manoir.","Suis la route vers le château au nord (de préférence à cheval).","Site de grâce : Grande porte du Manoir de Caria, devant l'entrée. Loretta se trouve dans la grande salle."],
+ "Académie de Raya Lucaria": ["Barrière magique à l'entrée principale : ouvre-la avec la clé.","Un site de grâce juste après la barrière, puis d'autres près du cimetière et dans le bâtiment intérieur.","Chemin vers le boss : escaliers finaux puis porte brumeuse du Loup cramoisi."],
+ "Rennala, reine de la pleine lune": ["Au sommet de l'Académie, après le Loup cramoisi de Radagon."]
+};
+STEPS.forEach(function (s) { s.near = NEAR[s.t] || []; });
+
 var GLOSS = [
  ["Site de grâce","Site of Grace","Point de repos et de téléportation."],
  ["Nécrolimbe","Limgrave","Première région du jeu."],
@@ -409,7 +427,7 @@ function norm(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toL
 STEPS.forEach(function (s, i) {
   s.n = i + 1;
   s.ref = s.sub ? null : "ABCDEFGHIJ".charAt(Math.min(9, Math.floor(s.x / 100))) + Math.min(7, Math.floor(s.y / 100) + 1);
-  s.hay = norm([s.t, s.zone, s.grace, s.boss || "", s.lvl, (s.go || []).join(" "), (s.get || []).join(" "), s.tip || "", s.en || "", s.warn || "", s.ref || "", PH[s.ph].name, "etape " + s.n].join(" "));
+  s.hay = norm([s.t, s.zone, s.grace, s.boss || "", s.lvl, (s.go || []).join(" "), (s.get || []).join(" "), (s.near || []).join(" "), s.tip || "", s.en || "", s.warn || "", s.ref || "", PH[s.ph].name, "etape " + s.n].join(" "));
 });
 var HERE = 8; // étape en cours par défaut : arrivée en Liurnia
 try { var h = localStorage.getItem(LS + "-here"); if (h) HERE = parseInt(h, 10) || HERE; } catch (e) {}
@@ -545,6 +563,7 @@ function render() {
       (s.access ? '<p><b>Accès :</b> ' + hl(s.access, toks) + '</p>' : "") +
       '<h4>Site de grâce / repère</h4><p>' + hl(s.grace, toks) + '</p>' +
       (s.boss ? '<h4>Boss</h4><p>' + hl(s.boss, toks) + '</p>' : "") +
+      (s.near && s.near.length ? '<h4>Repères sur le terrain</h4>' + ul(s.near, toks) : '') +
       '<h4>À faire</h4>' + ul(s.go, toks) +
       '<h4>À récupérer</h4>' + ul(s.get, toks) +
       (s.warn ? '<div class="hint"><b class="warn">Attention.</b> ' + hl(s.warn, toks) + '</div>' : "") +
