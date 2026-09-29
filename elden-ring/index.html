@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Route du Samouraï</title>
+<meta name="description" content="Guide Elden Ring pour un samouraï niveau 40 : route dans l'ordre, carte interactive numérotée, recherche, noms français.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Spectral:ital,wght@0,500;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Concept : table de cartographe de nuit. Carte schématique à gauche, route numérotée à droite, recherche toujours visible. */
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --panel2: #e4e8ea; --line: #c5ccd1;
+  --fg: #171c21; --muted: #56616a; --gold: #7d5e0c; --gold-soft: #f0e3b8;
+  --sea: #dfe7ea; --land: #f6f3ea; --ok: #2f7a45; --warn: #a3520f;
+  --c-necro: #3f8a4a; --c-liurnia: #2f78b0; --c-caelid: #b8462c; --c-altus: #a87f10; --c-leyndell: #7a4fa8; --c-fin: #56616a;
+  --font-d: "Spectral", Georgia, "Times New Roman", serif;
+  --font-b: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-m: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1013; --panel: #161b20; --panel2: #1e252b; --line: #2b343c;
+    --fg: #e9e6da; --muted: #9aa5ab; --gold: #d6ad4c; --gold-soft: #3a3016;
+    --sea: #10171c; --land: #1b232a; --ok: #6cc286; --warn: #e39a54;
+    --c-necro: #6fbf7b; --c-liurnia: #62adde; --c-caelid: #e0715a; --c-altus: #d9b13e; --c-leyndell: #b48ae0; --c-fin: #9aa5ab;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1013; --panel: #161b20; --panel2: #1e252b; --line: #2b343c;
+  --fg: #e9e6da; --muted: #9aa5ab; --gold: #d6ad4c; --gold-soft: #3a3016;
+  --sea: #10171c; --land: #1b232a; --ok: #6cc286; --warn: #e39a54;
+  --c-necro: #6fbf7b; --c-liurnia: #62adde; --c-caelid: #e0715a; --c-altus: #d9b13e; --c-leyndell: #b48ae0; --c-fin: #9aa5ab;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font-b); padding-inline: 16px; padding-block: 0 48px; }
+h1,h2,h3 { font-family: var(--font-d); text-wrap: balance; margin: 0; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin-inline: auto; }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); padding-block: 12px 10px; border-bottom: 1px solid var(--line); margin-inline: -16px; padding-inline: 16px; }
+.top-row { display: flex; gap: 12px 20px; align-items: center; flex-wrap: wrap; }
+.brand { display: flex; flex-direction: column; min-width: 0; }
+.brand h1 { font-size: 1.45rem; line-height: 1.1; font-weight: 700; }
+.brand span { color: var(--muted); font-size: .85rem; }
+.search { flex: 1 1 260px; position: relative; min-width: 0; }
+.search input { width: 100%; padding: 11px 40px 11px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.search input::placeholder { color: var(--muted); }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.search button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: 0; padding: 6px 10px; color: var(--muted); font-size: 1.1rem; }
+.progress { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--muted); white-space: nowrap; }
+.bar { width: 110px; height: 6px; background: var(--panel2); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .3s; }
+nav.tabs { display: flex; gap: 4px; margin-top: 10px; overflow-x: auto; }
+nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--gold); }
+nav.tabs .n:empty { display: none; }
+nav.tabs .n { font-family: var(--font-m); font-size: .72rem; background: var(--gold-soft); color: var(--gold); padding: 1px 6px; border-radius: 9px; margin-left: 6px; }
+
+.pane[hidden] { display: none !important; }
+.route { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; padding-top: 16px; align-items: start; }
+@media (max-width: 900px) { .route { grid-template-columns: minmax(0, 1fr); } }
+.mapbox { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 118px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+@media (max-width: 900px) { .mapbox { position: static; } }
+@media (max-width: 520px) { .brand span, .progress { display: none; } header.top { padding-block: 8px 0; } }
+.maptools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.chip { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 4px 11px; font-size: .8rem; display: inline-flex; gap: 6px; align-items: center; }
+.chip[aria-pressed="false"] { opacity: .45; }
+.chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.zoom { margin-left: auto; display: flex; gap: 4px; }
+.zoom button { width: 32px; height: 32px; border: 1px solid var(--line); background: var(--panel2); border-radius: 6px; font-weight: 700; }
+svg.map { width: 100%; height: auto; display: block; background: var(--sea); border-radius: 6px; user-select: none; }
+.reg { stroke-width: 1.5; fill-opacity: .22; }
+.regl { font-family: var(--font-d); font-style: italic; fill: var(--muted); font-size: 17px; letter-spacing: .04em; pointer-events: none; }
+.gridl { font-family: var(--font-m); font-size: 11px; fill: var(--muted); pointer-events: none; }
+.gridline { stroke: var(--line); stroke-width: 1; opacity: .55; }
+.route-line { fill: none; stroke: var(--gold); stroke-width: 2; stroke-dasharray: 6 5; opacity: .75; }
+.mk { cursor: pointer; }
+.mk circle, .mk rect { stroke: var(--bg); stroke-width: 2; }
+.mk text { font-family: var(--font-m); font-weight: 700; font-size: 12px; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.mk.dim { opacity: .18; }
+.mk.done circle, .mk.done rect { opacity: .45; }
+.mk.sel .ring { stroke: var(--gold); stroke-width: 3; fill: none; }
+.mk .ring { fill: none; stroke: none; }
+.here .pulse { fill: none; stroke: var(--gold); stroke-width: 2; animation: pulse 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .here .pulse { animation: none; } html { scroll-behavior: auto; } }
+.note { font-size: .8rem; color: var(--muted); margin: 8px 2px 0; }
+
+.steps { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.phase-h { font-family: var(--font-d); font-size: 1.15rem; margin: 14px 0 2px; display: flex; align-items: center; gap: 10px; }
+.phase-h:first-child { margin-top: 0; }
+.phase-h i { width: 12px; height: 12px; border-radius: 50%; }
+.phase-h small { font-family: var(--font-b); color: var(--muted); font-size: .8rem; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.step.sel { border-color: var(--gold); }
+.step.done .sum { opacity: .55; }
+.sum { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; width: 100%; background: none; border: 0; text-align: left; }
+.num { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 700 .85rem var(--font-m); }
+.sum b { display: block; font-family: var(--font-d); font-size: 1.05rem; line-height: 1.25; }
+.sum small { color: var(--muted); }
+.meta { font-family: var(--font-m); font-size: .72rem; color: var(--muted); text-align: right; white-space: nowrap; }
+.detail { padding: 2px 14px 14px 58px; display: none; }
+.step.open .detail { display: block; }
+@media (max-width: 520px) { .detail { padding-left: 14px; } }
+.detail h4 { margin: 12px 0 4px; font: 700 .72rem var(--font-b); letter-spacing: .09em; text-transform: uppercase; color: var(--gold); }
+.detail ul { margin: 0; padding-left: 18px; }
+.detail li { margin: 2px 0; }
+.detail p { margin: 4px 0; }
+.tag { display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 4px; background: var(--panel2); color: var(--muted); margin-right: 4px; }
+.tag.v { background: var(--gold-soft); color: var(--warn); }
+.tag.b { background: var(--gold-soft); color: var(--gold); font-weight: 600; }
+.chk { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .9rem; }
+.chk input { width: 18px; height: 18px; accent-color: var(--gold); }
+.hint { background: var(--gold-soft); border-radius: 6px; padding: 8px 10px; margin-top: 10px; font-size: .92rem; }
+.empty { padding: 26px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: 8px; }
+mark { background: var(--gold-soft); color: inherit; border-radius: 2px; }
+
+.doc { max-width: 860px; margin: 0 auto; padding-top: 18px; display: flex; flex-direction: column; gap: 22px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+.card h2 { font-size: 1.3rem; margin-bottom: 8px; }
+.card h3 { font-size: 1.05rem; margin: 14px 0 4px; }
+.card p, .card li { max-width: 68ch; }
+.card ul { padding-left: 20px; margin: 6px 0; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: .75rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+td.n, th.n { text-align: right; font-family: var(--font-m); font-variant-numeric: tabular-nums; }
+tr.now td { background: var(--gold-soft); }
+.gl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 8px; }
+.gl div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.gl b { font-family: var(--font-d); font-size: 1.05rem; }
+.gl em { color: var(--muted); font-style: normal; font-size: .85rem; display: block; }
+.gl span { font-size: .92rem; }
+.warn { color: var(--warn); font-weight: 600; }
+footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70ch; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><h1>Route du Samouraï</h1><span>Elden Ring · Switch 2 · niveau 41 · noms français</span></div>
+      <div class="search">
+        <input id="q" type="search" autocomplete="off" placeholder="Chercher : Rennala, Uchigatana, Graine dorée, Liurnia, D3…" aria-label="Rechercher dans le guide">
+        <button id="qx" type="button" aria-label="Effacer la recherche" hidden>×</button>
+      </div>
+      <div class="progress"><span id="ptxt">0 / 0</span><div class="bar"><i id="pbar"></i></div></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="route">Route &amp; carte<span class="n" id="n-route"></span></button>
+      <button role="tab" aria-selected="false" data-tab="perso">Mon samouraï</button>
+      <button role="tab" aria-selected="false" data-tab="gloss">Glossaire FR / EN<span class="n" id="n-gloss"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<section class="pane" id="pane-route">
+  <div class="route">
+    <div class="mapbox">
+      <div class="maptools" id="chips"></div>
+      <svg class="map" id="map" viewBox="0 0 1000 700" role="img" aria-label="Carte schématique des Terres Intermédiaires avec les étapes numérotées"></svg>
+      <div class="maptools" style="margin-top:8px">
+        <span class="note" style="margin:0">Carte schématique. Repère de grille (ex. C3) = colonne A-J, ligne 1-7.</span>
+        <div class="zoom"><button type="button" id="zin" aria-label="Zoom avant">+</button><button type="button" id="zout" aria-label="Zoom arrière">−</button><button type="button" id="zr" aria-label="Réinitialiser la carte">⟲</button></div>
+      </div>
+    </div>
+    <div class="steps" id="steps" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="pane" id="pane-perso" hidden>
+  <div class="doc">
+    <div class="card">
+      <h2>Ton état actuel (captures du 29 septembre)</h2>
+      <div class="tw"><table>
+        <tr><th>Attribut</th><th class="n">Actuel</th><th class="n">Cible niv. 60</th><th class="n">Cible niv. 80</th><th>Rôle</th></tr>
+        <tr><td>Vigueur</td><td class="n">25</td><td class="n">38</td><td class="n">40</td><td>PV. Priorité n°1 jusqu'à 40.</td></tr>
+        <tr><td>Esprit</td><td class="n">11</td><td class="n">13</td><td class="n">13</td><td>PC (cendres de guerre, sorts).</td></tr>
+        <tr><td>Endurance</td><td class="n">20</td><td class="n">24</td><td class="n">25</td><td>Endurance et charge équipée.</td></tr>
+        <tr><td>Force</td><td class="n">17</td><td class="n">17</td><td class="n">17</td><td>Suffisant : arrête d'investir ici.</td></tr>
+        <tr><td>Dextérité</td><td class="n">22</td><td class="n">27</td><td class="n">30</td><td>Puissance des katanas.</td></tr>
+        <tr><td>Intelligence</td><td class="n">9</td><td class="n">9</td><td class="n">9</td><td>Inutile pour toi (sauf affinité Magie).</td></tr>
+        <tr><td>Foi</td><td class="n">8</td><td class="n">8</td><td class="n">8</td><td>Inutile.</td></tr>
+        <tr><td>Ésotérisme</td><td class="n">8</td><td class="n">8</td><td class="n">20</td><td>Exigé (20) par la Rivière sanglante, augmente aussi le saignement.</td></tr>
+      </table></div>
+      <p class="note">Le niveau 41 exige 10 419 runes pour passer au suivant. Les cibles sont une proposition, on les ajustera à chaque capture.</p>
+    </div>
+    <div class="card">
+      <h2>Diagnostic de tes captures</h2>
+      <h3>Arme : Uchigatana magique +7</h3>
+      <ul>
+        <li>Prérequis Force 11 / Dextérité 15 : largement remplis. Passif : accumule du saignement (45).</li>
+        <li>L'affinité <b>Magie</b> gagne en puissance avec l'Intelligence (mise à C) et la tienne est à 9. Au site de grâce, ouvre le menu des Cendres de guerre et compare l'attaque en Standard, Aiguisée et Sang. Garde la valeur la plus haute. Le niveau +7 est conservé quand on change d'affinité.</li>
+        <li>La Cendre de guerre actuelle est Flèche de pierre d'éclat (8 PC). Utile à distance, mais ce n'est pas une compétence de katana.</li>
+        <li>Montée de l'arme : améliore-la avec des Pierres de forge chez Hewg (Forteresse de la Table ronde) avant de dépenser dans l'armure.</li>
+      </ul>
+      <h3>Équipement et poids</h3>
+      <ul>
+        <li>Charge équipée 39,4 / 64,1 : 61 %. En dessous de 70 %, la roulade reste moyenne. Marge : environ 5 de poids.</li>
+        <li>Armure des Terres des roseaux (poids 8,3, immunité 60, robustesse 50, focalisation 50, vitalité 55). C'est l'armure de départ du samouraï. Remplace-la seulement par des pièces qui ont plus de défense physique pour un poids proche.</li>
+      </ul>
+      <h3>Position</h3>
+      <ul>
+        <li>Tu es en Liurnia, dans la zone des lacs. Nécrolimbe est presque entièrement débloqué, Caelid en partie.</li>
+        <li>Prochaines étapes de la route : voir les étapes 8 à 11 (Liurnia, Loretta, Académie, Rennala).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Conseils pour un samouraï</h2>
+      <ul>
+        <li><b>Vigueur d'abord.</b> Chaque point donne de la marge sur les gros coups. Vise 35 avant Altus, 40 ensuite.</li>
+        <li><b>Saignement.</b> L'Uchigatana accumule du saignement naturellement. Enchaîne les coups légers, laisse la jauge se remplir, puis continue de frapper. Les boss de type dragon ou statue y sont peu sensibles.</li>
+        <li><b>Charge équipée.</b> Reste sous 70 % pour garder la roulade moyenne. Regarde le poids de chaque pièce avant d'équiper.</li>
+        <li><b>Esprits.</b> Utilise la Clochette d'invocation d'esprit et des Cendres d'esprit sur les boss difficiles. Ils détournent les attaques pendant que tu frappes.</li>
+        <li><b>Redistribuer les points.</b> Après Rennala, reine de la pleine lune, tu peux réinitialiser tes attributs avec une Larme larvaire. Utile si tu changes d'idée sur la Force ou l'Intelligence.</li>
+        <li><b>Rivière sanglante.</b> Le meilleur katana saignement du jeu se gagne contre Okina aux Cimes des géants. Prérequis : Force 12, Dextérité 18, Ésotérisme 20. <span class="warn">Ne tue pas le Géant de feu avant Okina, sinon l'arme n'est plus récupérable.</span></li>
+        <li><b>Yura et le Nagakiba.</b> Si Yura meurt pendant le combat contre Nerijus en Liurnia, sa quête est bloquée définitivement. Protège-le.</li>
+        <li><b>Ne pas gaspiller de runes.</b> Avant un boss, monte de niveau ou améliore l'arme. Ne garde pas 10 000 runes en poche.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Ce que j'ai besoin de voir sur tes prochaines photos</h2>
+      <ul>
+        <li>L'écran de talismans (4 emplacements) et la sacoche à talisman.</li>
+        <li>L'inventaire des Cendres de guerre, des Cendres d'esprit et des objets clés.</li>
+        <li>La liste des Pierres de forge que tu possèdes, avec les quantités.</li>
+        <li>La carte zoomée sur ta position avec les sites de grâce visibles.</li>
+        <li>Les boss déjà battus (Margit, Godrick, Loretta, Rennala, Radahn…).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="pane" id="pane-gloss" hidden>
+  <div class="doc" style="max-width:1100px"><div class="gl" id="gl"></div><div class="empty" id="glempty" hidden>Aucun terme trouvé. Essaie un autre mot.</div></div>
+</section>
+</main>
+
+<footer class="wrap"><p>Guide non officiel. Noms français relevés dans des guides français. Si un nom diffère à l'écran, envoie une capture. Les positions sur la carte sont approximatives et servent de repère. Les étapes marquées « à vérifier » sont les moins sûres.</p></footer>
+
+<script>
+(function () {
+"use strict";
+
+var PH = {
+  necro:    { name: "Nécrolimbe",            col: "var(--c-necro)",    lvl: "niveau 1–35" },
+  liurnia:  { name: "Liurnia",               col: "var(--c-liurnia)",  lvl: "niveau 35–50" },
+  caelid:   { name: "Caelid",                col: "var(--c-caelid)",   lvl: "niveau 50–65" },
+  altus:    { name: "Plateau d'Altus et Mont Gelmir", col: "var(--c-altus)", lvl: "niveau 60–75" },
+  leyndell: { name: "Léyndell et au-delà",   col: "var(--c-leyndell)", lvl: "niveau 75–95" },
+  fin:      { name: "Fin du jeu",            col: "var(--c-fin)",      lvl: "niveau 95+" }
+};
+
+// x,y : position schématique sur la carte (0–1000, 0–700). sub : souterrain ou instance.
+var STEPS = [
+ { ph:"necro", t:"Melina et Torrent", zone:"Nécrolimbe", x:262, y:520, grace:"La Première Étape (The First Step)", lvl:"1–10",
+   go:["Parle à Melina au site de grâce et accepte son offre : elle te permet de monter de niveau.","Récupère Torrent, ton cheval. Le Sifflet de Torrent (Spectral Steed Whistle) l'appelle."],
+   get:["Torrent","Monter de niveau (Grâce)"], tip:"Torrent sert à explorer et à fuir. Il ne combat pas dans les donjons.", en:"Melina Torrent Whistle Limgrave" },
+ { ph:"necro", t:"Église d'Elleh", zone:"Nécrolimbe", x:288, y:578, grace:"Église d'Elleh (Church of Elleh)", lvl:"1–15",
+   go:["Kalé le marchand vend les premiers consommables.","Renna te donne la Clochette d'invocation d'esprit (Spirit Calling Bell) après ta première visite à la Table ronde."],
+   get:["Clochette d'invocation d'esprit","Marchand : flèches, cordes, consommables"], verify:true, en:"Church of Elleh Kale Renna Spirit Calling Bell" },
+ { ph:"necro", t:"Forteresse de la Table ronde", zone:"Nécrolimbe (instance)", sub:true, access:"Menu de téléportation depuis un site de grâce", x:85, y:512, grace:"Forteresse de la Table ronde (Roundtable Hold)", lvl:"toute la partie",
+   go:["Hewg le forgeron améliore tes armes avec des Pierres de forge.","Enia (la doigtière) échange les Souvenirs de boss contre des armes ou des sorts.","Reviens ici après chaque boss important."],
+   get:["Améliorations d'armes (Pierres de forge)","Armes et sorts contre Souvenirs"], tip:"Améliore l'Uchigatana en priorité. Une arme +7 se montre nettement plus utile qu'une armure neuve.", en:"Roundtable Hold Hewg Enia Smithing Stone" },
+ { ph:"necro", t:"Margit, le déchu", zone:"Nécrolimbe · devant le Château de Voilorage", x:330, y:500, grace:"Site de grâce devant le château", lvl:"25–35", boss:"Margit, le déchu (Margit, the Fell Omen)",
+   go:["Va au pont d'entrée du Château de Voilorage, au nord de Nécrolimbe.","Combat Margit. Esquive derrière lui et frappe entre ses combos."],
+   get:["Sacoche à talisman (emplacement de talisman supplémentaire)","Entraves de Margit via Pat (Margit's Shackle)"], tip:"Le samouraï esquive bien : frappe 1 ou 2 fois puis recule.", en:"Margit Fell Omen Stormveil Talisman Pouch" },
+ { ph:"necro", t:"Traverser le Château de Voilorage", zone:"Nécrolimbe · Château de Voilorage", x:312, y:462, grace:"Falaise de Voilorage · Échauguette · Chambre voisine de l'ascenseur", lvl:"25–35",
+   go:["Ne passe pas par l'entrée principale : contourne par le côté pour éviter les pièges du départ.","Rogier le Sorcier (Rogier) se trouve dans la chapelle. Nepheli Loux peut t'aider face au boss.","Un scarabée dans le château donne les Cendres de guerre : Mande-orage."],
+   get:["Clé rouillée (Rusty Key)","Talisman d'épée courbée","Voile mimétique (coffre)","Souvenir du cocon : à donner à la femme de la cabane pour une Graine dorée","Pierres de forge","Cendres de guerre : Mande-orage"], en:"Stormveil Castle Rogier Nepheli Loux Rusty Key Golden Seed", tip:"Les graines dorées augmentent le nombre de gorgées de ta fiole." },
+ { ph:"necro", t:"Godrick le greffé", zone:"Nécrolimbe · fin du Château de Voilorage", x:298, y:436, grace:"Site de grâce devant le boss", lvl:"30–40", boss:"Godrick le greffé (Godrick the Grafted)",
+   go:["Boss en deux phases. Sa hache fait de gros dégâts : reste près de lui et roule sous ses coups.","Restaure la Grande Rune à la Tour divine du nord-est pour activer son bonus."],
+   get:["Grande Rune de Godrick (bonus aux attributs une fois restaurée)","Souvenir de Godrick"], en:"Godrick Great Rune Divine Tower Limgrave", tip:"Invoque Nepheli ou un esprit : cela détourne les coups." },
+ { ph:"necro", t:"Siofra, esprit ancestral", zone:"Souterrain de Nécrolimbe", sub:true, access:"Ascenseur oriental du puits de la rivière Siofra", x:85, y:562, grace:"La Siofra (Siofra River)", lvl:"30–50", boss:"Esprit ancestral (Ancestor Spirit)",
+   go:["Descends par l'ascenseur à l'est de Nécrolimbe.","Traverse la zone souterraine et bats l'Esprit ancestral."],
+   get:["Souvenir de l'Esprit ancestral (Regal Ancestor)"], verify:true, en:"Siofra River Ancestor Spirit Nokron" },
+
+ { ph:"liurnia", t:"Arrivée en Liurnia", zone:"Liurnia, contrée lacustre", x:255, y:322, grace:"Sites de grâce du lac (Liurnia)", lvl:"35–45",
+   go:["Prends la route nord-ouest depuis Nécrolimbe.","Débloque les fragments de carte aux stèles.","Tu y es déjà : vérifie que tu as bien ouvert tous les sites de grâce autour des lacs."],
+   get:["Fragments de carte (Liurnia)"], en:"Liurnia of the Lakes Map fragment", tip:"C'est ta zone actuelle (niveau 41 : parfaitement adapté)." },
+ { ph:"liurnia", t:"Loretta, chevaleresse royale", zone:"Liurnia · Manoir de Caria", x:335, y:238, grace:"Manoir de Caria (Caria Manor)", lvl:"38–50", boss:"Loretta, chevaleresse royale (Royal Knight Loretta)",
+   go:["Traverse le Manoir de Caria jusqu'à Loretta.","Elle est à cheval et lance des projectiles magiques : reste au corps à corps quand elle démonte."],
+   get:["Clé de pierre d'éclat de l'Académie (Academy Glintstone Key)"], en:"Caria Manor Loretta Academy Glintstone Key", tip:"Sans cette clé, impossible d'entrer à l'Académie de Raya Lucaria." },
+ { ph:"liurnia", t:"Académie de Raya Lucaria", zone:"Liurnia · nord-ouest", x:188, y:212, grace:"Académie de Raya Lucaria", lvl:"38–50", boss:"Loup cramoisi de Radagon (Red Wolf of Radagon)",
+   go:["Utilise la clé à la porte de l'Académie.","Traverse les salles jusqu'au Loup cramoisi de Radagon : il est rapide, garde ta distance et esquive."],
+   get:["Accès au boss de l'Académie"], en:"Raya Lucaria Academy Red Wolf" },
+ { ph:"liurnia", t:"Rennala, reine de la pleine lune", zone:"Liurnia · sommet de l'Académie", x:172, y:175, grace:"Avant le boss", lvl:"40–50", boss:"Rennala, reine de la pleine lune (Rennala, Queen of the Full Moon)",
+   go:["Deux phases. Phase 1 : détruis les mages qui la protègent pour la rendre vulnérable. Phase 2 : elle attaque à distance et invoque des orbes magiques."],
+   get:["Souvenir de Rennala, reine de la pleine lune","Possibilité de réinitialiser tes attributs avec une Larme larvaire"], en:"Rennala Full Moon Queen Larval Tear Rebirth", tip:"Avant de dépenser tes points, décide de ta répartition : c'est l'occasion de corriger la Force.", verify:true },
+ { ph:"liurnia", t:"Précipice jonché de ruines : Makar", zone:"Liurnia · nord", x:392, y:168, grace:"Précipice jonché de ruines", lvl:"45–60", boss:"Makar, le dragon du magma (Magma Wyrm Makar)",
+   go:["Boss facultatif au nord de Liurnia."],
+   get:["Accès alternatif vers le Plateau d'Altus"], verify:true, en:"Ruin-Strewn Precipice Magma Wyrm Makar" },
+
+ { ph:"caelid", t:"Entrée en Caelid", zone:"Caelid", x:520, y:500, grace:"Pont de Redmane (route vers Caelid)", lvl:"50–60",
+   go:["Va à l'est de Nécrolimbe.","La putréfaction écarlate ralentit ta jauge : évite l'eau rouge et prépare des consommables contre la putréfaction."],
+   get:["Fragments de carte (Caelid)"], en:"Caelid Scarlet Rot" },
+ { ph:"caelid", t:"Château du lion rouge", zone:"Caelid", x:590, y:545, grace:"Château du lion rouge (Redmane Castle)", lvl:"55–65",
+   go:["Parle à Jerren pour lancer le festival.","Explore le château avant le boss."],
+   get:["Accès à Radahn"], verify:true, en:"Redmane Castle Jerren festival" },
+ { ph:"caelid", t:"Radahn, fléau des étoiles", zone:"Caelid · plaine de Radahn", x:640, y:500, grace:"Plaine avant le boss", lvl:"60+", boss:"Radahn, fléau des étoiles (Starscourge Radahn)",
+   go:["Convoque les alliés du festival (PNJ) pour t'aider.","Combat difficile : bats-toi en retrait avec l'arc, puis au corps à corps."],
+   get:["Grande Rune de Radahn","Souvenir de Radahn","Ouvre l'accès à Nokron"], en:"Starscourge Radahn Great Rune Nokron", tip:"Attends le niveau 60 environ." },
+ { ph:"caelid", t:"Nokron, cité éternelle", zone:"Souterrain de Caelid", sub:true, access:"Après la chute de Radahn : puits de la Siofra", x:85, y:612, grace:"Nokron, cité éternelle", lvl:"55–70", boss:"Larme mimétique (Mimic Tear)",
+   go:["Descends dans le souterrain après Radahn."],
+   get:["Cendres d'esprit : Larme mimétique (Mimic Tear)"], verify:true, en:"Nokron Eternal City Mimic Tear Silver Tear" },
+ { ph:"caelid", t:"Médaillon de Dectus (deux moitiés)", zone:"Nécrolimbe et Caelid", x:760, y:470, grace:"Fort Haight et Fort Faroth", lvl:"45–60",
+   go:["Une moitié à Fort Haight, l'autre à Fort Faroth.","Assemble-les pour activer le Grand Ascenseur de Dectus."],
+   get:["Médaillon de Dectus (moitié gauche, moitié droite)"], verify:true, en:"Dectus Medallion Fort Haight Fort Faroth" },
+
+ { ph:"altus", t:"Grand Ascenseur de Dectus", zone:"Liurnia / Altus", x:400, y:270, grace:"Grand Ascenseur de Dectus", lvl:"55–65",
+   go:["Va à l'ascenseur au nord de Liurnia avec le Médaillon complet."],
+   get:["Accès au Plateau d'Altus"], verify:true, en:"Grand Lift of Dectus" },
+ { ph:"altus", t:"Plateau d'Altus", zone:"Plateau d'Altus", x:520, y:240, grace:"Plateau d'Altus", lvl:"55–70",
+   go:["Explore le plateau et retrouve Yura à la Deuxième église de Marika : il te donne le Nagakiba.","Ne laisse pas Yura mourir pendant sa quête."],
+   get:["Nagakiba (katana)","Fragments de carte (Altus)"], verify:true, en:"Altus Plateau Yura Nagakiba Second Church of Marika" },
+ { ph:"altus", t:"Rykard, seigneur du blasphème", zone:"Mont Gelmir · Manoir du Volcan", x:355, y:140, grace:"Manoir du Volcan (Volcano Manor)", lvl:"60–75", boss:"Rykard, seigneur du blasphème (Rykard, Lord of Blasphemy)",
+   go:["Rejoins le Manoir du Volcan à Gelmir.","Bats Rykard en évitant le serpent."],
+   get:["Souvenir de Rykard","Grande Rune de Rykard"], verify:true, en:"Mt Gelmir Volcano Manor Rykard Lord of Blasphemy" },
+
+ { ph:"leyndell", t:"Léyndell, capitale royale", zone:"Léyndell", x:690, y:145, grace:"Porte de Léyndell", lvl:"70–80",
+   go:["Il faut deux Grandes Runes pour franchir la porte (Godrick, Radahn ou Rykard).","Explore la ville pour t'approcher de Morgott."],
+   get:["Accès à la capitale"], en:"Leyndell Royal Capital Great Runes" },
+ { ph:"leyndell", t:"Morgott, le roi présage", zone:"Léyndell", x:715, y:118, grace:"Avant le boss", lvl:"75–90", boss:"Morgott, le roi présage (Morgott, the Omen King)",
+   go:["Boss puissant : garde ton bouclier ou esquive à distance moyenne.","Utilise les Entraves de Margit pour l'immobiliser."],
+   get:["Grande Rune de Morgott","Souvenir du roi présage"], en:"Morgott Omen King Great Rune", tip:"Ne pas oublier les quêtes de PNJ avant ce combat." },
+ { ph:"leyndell", t:"Cimes des géants : Rivière sanglante", zone:"Cimes des géants", x:860, y:100, grace:"Église du Repos (Church of Repose)", lvl:"80+", boss:"Okina (invasion)",
+   go:["Va à l'Église du Repos avant de tuer le Géant de feu.","Bats Okina : il tombe avec la Rivière sanglante et le Masque d'Okina."],
+   get:["Rivière sanglante (Rivers of Blood) : Force 12, Dextérité 18, Ésotérisme 20","Masque d'Okina"], warn:"Ne tue pas le Géant de feu avant de récupérer cette arme.", en:"Mountaintops of the Giants Rivers of Blood Okina Fire Giant" },
+ { ph:"leyndell", t:"Palais de Mohgwyn", zone:"Palais de Mohgwyn", x:815, y:590, grace:"Palais de Mohgwyn", lvl:"80–100", boss:"Mohg, seigneur du sang (Mohg, Lord of Blood)",
+   go:["Accès via la quête de Varré et la Médaille du chevalier pur-sang.","Optionnel mais très rentable en runes."],
+   get:["Grande Rune de Mohg"], verify:true, en:"Mohgwyn Palace Mohg Lord of Blood Varre" },
+ { ph:"leyndell", t:"Arbre sacré de Miquella : Malenia", zone:"Champs de neige consacrés", x:948, y:140, grace:"Arbre sacré de Miquella", lvl:"100+", boss:"Malenia, épée de Miquella (Malenia, Blade of Miquella)",
+   go:["Boss optionnel le plus difficile."],
+   get:["Grande Rune de Malenia"], verify:true, en:"Haligtree Malenia Blade of Miquella Consecrated Snowfield" },
+
+ { ph:"fin", t:"Farum Azula : Maliketh", zone:"Ruines de Farum Azula", x:920, y:290, grace:"Ruines de Farum Azula", lvl:"100+", boss:"Maliketh, la lame d'ébène (Maliketh, the Black Blade)",
+   go:["Accessible après avoir allumé la Forge des géants.","Point de non-retour : finis toutes les quêtes de PNJ avant."],
+   get:["Souvenir de Maliketh"], en:"Crumbling Farum Azula Maliketh Black Blade" },
+ { ph:"fin", t:"Capitale des cendres : Radagon et Bête d'Elden", zone:"Léyndell, capitale des cendres", x:690, y:190, grace:"Trône d'Elden", lvl:"110+", boss:"Radagon et Bête d'Elden (Radagon / Elden Beast)",
+   go:["Dernier combat du jeu."],
+   get:["Fin du jeu"], en:"Ashen Capital Radagon Elden Beast Elden Throne" }
+];
+
+var GLOSS = [
+ ["Site de grâce","Site of Grace","Point de repos et de téléportation."],
+ ["Nécrolimbe","Limgrave","Première région du jeu."],
+ ["Péninsule larmoyante","Weeping Peninsula","Région au sud de Nécrolimbe."],
+ ["Liurnia, contrée lacustre","Liurnia of the Lakes","Deuxième région, au nord-ouest."],
+ ["Caelid","Caelid","Région rouge à l'est, putréfaction écarlate."],
+ ["Plateau d'Altus","Altus Plateau","Région au nord, accès par le Grand Ascenseur de Dectus."],
+ ["Mont Gelmir","Mt. Gelmir","Volcan au nord-ouest d'Altus."],
+ ["Léyndell, capitale royale","Leyndell, Royal Capital","Ville centrale, deux Grandes Runes requises."],
+ ["Cimes des géants","Mountaintops of the Giants","Région enneigée au nord-est."],
+ ["Château de Voilorage","Stormveil Castle","Premier grand donjon, boss Godrick."],
+ ["Académie de Raya Lucaria","Raya Lucaria Academy","Donjon de Liurnia, boss Rennala."],
+ ["Forteresse de la Table ronde","Roundtable Hold","Hub : forgeron, marchands, PNJ."],
+ ["Margit, le déchu","Margit, the Fell Omen","Premier boss majeur."],
+ ["Godrick le greffé","Godrick the Grafted","Boss de Voilorage."],
+ ["Loretta, chevaleresse royale","Royal Knight Loretta","Boss du Manoir de Caria, donne la clé de l'Académie."],
+ ["Rennala, reine de la pleine lune","Rennala, Queen of the Full Moon","Boss de l'Académie, réinitialisation des attributs."],
+ ["Radahn, fléau des étoiles","Starscourge Radahn","Boss du festival de Caelid."],
+ ["Morgott, le roi présage","Morgott, the Omen King","Boss de Léyndell."],
+ ["Malenia, épée de Miquella","Malenia, Blade of Miquella","Boss optionnel très difficile."],
+ ["Maliketh, la lame d'ébène","Maliketh, the Black Blade","Boss de Farum Azula."],
+ ["Uchigatana","Uchigatana","Katana de départ du samouraï, saignement."],
+ ["Rivière sanglante","Rivers of Blood","Katana saignement (Force 12, Dex 18, Arc 20)."],
+ ["Nagakiba","Nagakiba","Katana long, donné par Yura."],
+ ["Pierre de forge","Smithing Stone","Améliore les armes."],
+ ["Cendre de guerre","Ash of War","Compétence d'arme, choisit aussi l'affinité."],
+ ["Cendres d'esprit","Spirit Ashes","Invoque un allié."],
+ ["Clochette d'invocation d'esprit","Spirit Calling Bell","Permet d'utiliser les Cendres d'esprit."],
+ ["Graine dorée","Golden Seed","Augmente les charges de fiole."],
+ ["Larme sacrée","Sacred Tear","Améliore la puissance de la fiole."],
+ ["Larme larvaire","Larval Tear","Sert à réinitialiser les attributs chez Rennala."],
+ ["Grande Rune","Great Rune","Pouvoir des demi-dieux."],
+ ["Torrent","Torrent","Ton cheval spectral."],
+ ["Sacoche à talisman","Talisman Pouch","Ajoute un emplacement de talisman."],
+ ["Vigueur","Vigor","PV."],
+ ["Esprit","Mind","PC."],
+ ["Endurance","Endurance","Endurance et charge équipée."],
+ ["Force","Strength","Puissance des armes lourdes."],
+ ["Dextérité","Dexterity","Puissance des katanas et vitesse d'incantation."],
+ ["Intelligence","Intelligence","Sorcellerie."],
+ ["Foi","Faith","Incantations."],
+ ["Ésotérisme","Arcane","Découverte, saignement, certains sorts."],
+ ["Saignement","Bleed / Hemorrhage","Dégâts en pourcentage des PV."],
+ ["Putréfaction écarlate","Scarlet Rot","Statut de Caelid."],
+ ["Charge équipée","Equip Load","Poids maximal supporté."],
+ ["Équilibre","Poise","Résistance à l'étourdissement."],
+ ["Découverte","Discovery","Chance de butin."]
+];
+
+var LS = "eldenring-samourai-v1";
+function loadDone() { try { var v = JSON.parse(localStorage.getItem(LS) || "{}"); return v || {}; } catch (e) { return {}; } }
+function saveDone(o) { try { localStorage.setItem(LS, JSON.stringify(o)); } catch (e) {} }
+var done = loadDone();
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function norm(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+STEPS.forEach(function (s, i) {
+  s.n = i + 1;
+  s.ref = s.sub ? null : "ABCDEFGHIJ".charAt(Math.min(9, Math.floor(s.x / 100))) + Math.min(7, Math.floor(s.y / 100) + 1);
+  s.hay = norm([s.t, s.zone, s.grace, s.boss || "", s.lvl, (s.go || []).join(" "), (s.get || []).join(" "), s.tip || "", s.en || "", s.warn || "", s.ref || "", PH[s.ph].name, "etape " + s.n].join(" "));
+});
+var HERE = 8; // étape en cours par défaut : arrivée en Liurnia
+try { var h = localStorage.getItem(LS + "-here"); if (h) HERE = parseInt(h, 10) || HERE; } catch (e) {}
+
+var state = { q: "", sel: HERE, on: {} };
+Object.keys(PH).forEach(function (k) { state.on[k] = true; });
+
+/* ---------- carte ---------- */
+var NS = "http://www.w3.org/2000/svg";
+var svg = document.getElementById("map");
+var vb = { x: 0, y: 0, w: 1000, h: 700 };
+function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+var REGIONS = [
+ ["liurnia","70,180 200,130 320,150 385,240 375,385 300,425 170,440 80,385 58,270","Liurnia",150,300],
+ ["necro","165,455 300,415 405,445 432,525 400,600 300,632 200,612 150,540","Nécrolimbe",290,540],
+ ["necro","190,640 300,645 360,690 240,698 180,682","Péninsule larmoyante",270,672],
+ ["caelid","440,455 560,425 690,455 722,535 662,612 522,622 432,562","Caelid",575,585],
+ ["caelid","712,445 822,445 862,525 802,600 722,545","Dragonbarrow",790,500],
+ ["altus","412,175 522,152 622,192 632,292 522,332 422,302","Plateau d'Altus",500,278],
+ ["altus","300,100 400,82 442,150 402,205 322,192","Mont Gelmir",340,158],
+ ["leyndell","640,92 722,82 762,152 722,222 652,202","Léyndell",696,170],
+ ["leyndell","770,32 962,32 972,182 852,212 782,152","Cimes des géants",860,168],
+ ["leyndell","742,545 862,535 902,625 802,662 732,625","Palais de Mohgwyn",810,635],
+ ["fin","870,255 970,255 980,340 890,345","Farum Azula",925,322]
+];
+function drawMap() {
+  svg.innerHTML = "";
+  var gb = el("g", {}, svg);
+  for (var i = 0; i <= 10; i++) {
+    el("line", { class: "gridline", x1: i * 100, y1: 0, x2: i * 100, y2: 700 }, gb);
+    if (i < 10) { var t = el("text", { class: "gridl", x: i * 100 + 6, y: 14 }, gb); t.textContent = "ABCDEFGHIJ".charAt(i); }
+  }
+  for (var j = 0; j <= 7; j++) {
+    el("line", { class: "gridline", x1: 0, y1: j * 100, x2: 1000, y2: j * 100 }, gb);
+    if (j < 7) { var t2 = el("text", { class: "gridl", x: 4, y: j * 100 + 28 }, gb); t2.textContent = j + 1; }
+  }
+  REGIONS.forEach(function (r) {
+    var c = PH[r[0]].col;
+    el("polygon", { class: "reg", points: r[1], fill: c, stroke: c }, svg);
+    var t = el("text", { class: "regl", x: r[3], y: r[4], "text-anchor": "middle" }, svg); t.textContent = r[2];
+  });
+  el("rect", { x: 20, y: 482, width: 130, height: 210, rx: 8, fill: "none", stroke: "var(--muted)", "stroke-dasharray": "4 4" }, svg);
+  var ul = el("text", { class: "regl", x: 85, y: 498, "text-anchor": "middle", style: "font-size:13px" }, svg); ul.textContent = "Souterrains";
+  var seg = [], prev = null;
+  STEPS.forEach(function (s) {
+    if (s.sub) return;
+    if (!prev || prev.ph !== s.ph) { seg.push([]); }
+    seg[seg.length - 1].push(s.x + "," + s.y); prev = s;
+  });
+  seg.forEach(function (pp) { if (pp.length > 1) el("polyline", { class: "route-line", points: pp.join(" ") }, svg); });
+  STEPS.forEach(function (s) {
+    var g = el("g", { class: "mk", "data-n": s.n, tabindex: 0, role: "button", "aria-label": "Étape " + s.n + " : " + s.t }, svg);
+    g.setAttribute("data-x", s.x); g.setAttribute("data-y", s.y);
+    el("circle", { class: "pulse", cx: 0, cy: 0, r: 14 }, g);
+    if (s.sub) el("rect", { x: -13, y: -13, width: 26, height: 26, rx: 4, fill: PH[s.ph].col }, g);
+    else el("circle", { r: 13, fill: PH[s.ph].col }, g);
+    el("circle", { class: "ring", r: 18 }, g);
+    var tx = el("text", {}, g); tx.textContent = s.n;
+    g.addEventListener("click", function () { select(s.n, true); });
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(s.n, true); } });
+  });
+  placeMarkers();
+}
+function placeMarkers() {
+  var k = vb.w / 1000;
+  var ms = svg.querySelectorAll(".mk");
+  for (var i = 0; i < ms.length; i++) {
+    var g = ms[i];
+    g.setAttribute("transform", "translate(" + g.getAttribute("data-x") + "," + g.getAttribute("data-y") + ") scale(" + (k < 1 ? Math.max(k, 0.55) : 1) + ")");
+  }
+  svg.setAttribute("viewBox", vb.x + " " + vb.y + " " + vb.w + " " + vb.h);
+}
+function zoom(f, cx, cy) {
+  var nw = Math.max(250, Math.min(1000, vb.w * f)), nh = nw * 0.7;
+  cx = cx == null ? vb.x + vb.w / 2 : cx; cy = cy == null ? vb.y + vb.h / 2 : cy;
+  vb.x = Math.max(0, Math.min(1000 - nw, cx - nw / 2)); vb.y = Math.max(0, Math.min(700 - nh, cy - nh / 2));
+  vb.w = nw; vb.h = nh; placeMarkers();
+}
+document.getElementById("zin").onclick = function () { zoom(0.7); };
+document.getElementById("zout").onclick = function () { zoom(1 / 0.7); };
+document.getElementById("zr").onclick = function () { vb = { x: 0, y: 0, w: 1000, h: 700 }; placeMarkers(); };
+svg.addEventListener("wheel", function (e) { if (!e.ctrlKey && !e.shiftKey) return; e.preventDefault(); zoom(e.deltaY < 0 ? 0.85 : 1 / 0.85); }, { passive: false });
+var drag = null;
+svg.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse" || e.target.closest(".mk")) return; drag = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; svg.setPointerCapture(e.pointerId); });
+svg.addEventListener("pointermove", function (e) {
+  if (!drag) return; var r = svg.getBoundingClientRect(); var s = vb.w / r.width;
+  vb.x = Math.max(0, Math.min(1000 - vb.w, drag.vx - (e.clientX - drag.x) * s)); vb.y = Math.max(0, Math.min(700 - vb.h, drag.vy - (e.clientY - drag.y) * s)); placeMarkers();
+});
+svg.addEventListener("pointerup", function () { drag = null; });
+
+/* ---------- filtres ---------- */
+var chips = document.getElementById("chips");
+Object.keys(PH).forEach(function (k) {
+  var b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", "true");
+  b.innerHTML = '<i style="background:' + PH[k].col + '"></i>' + esc(PH[k].name.split(" et ")[0]);
+  b.onclick = function () { state.on[k] = !state.on[k]; b.setAttribute("aria-pressed", String(state.on[k])); render(); };
+  chips.appendChild(b);
+});
+
+/* ---------- liste ---------- */
+var list = document.getElementById("steps");
+function tokens(q) { return norm(q).split(/\s+/).filter(Boolean); }
+function matches(s, toks) { for (var i = 0; i < toks.length; i++) if (s.hay.indexOf(toks[i]) < 0) return false; return true; }
+function hl(text, toks) {
+  var out = esc(text); if (!toks.length) return out;
+  var n = norm(text), ranges = [];
+  toks.forEach(function (t) { var i = -1; while ((i = n.indexOf(t, i + 1)) >= 0) ranges.push([i, i + t.length]); });
+  if (!ranges.length || n.length !== text.length) return out;
+  ranges.sort(function (a, b) { return a[0] - b[0]; });
+  var res = "", pos = 0;
+  ranges.forEach(function (r) { if (r[0] < pos) return; res += esc(text.slice(pos, r[0])) + "<mark>" + esc(text.slice(r[0], r[1])) + "</mark>"; pos = r[1]; });
+  return res + esc(text.slice(pos));
+}
+function ul(items, toks) { return items && items.length ? "<ul>" + items.map(function (i) { return "<li>" + hl(i, toks) + "</li>"; }).join("") + "</ul>" : ""; }
+
+function render() {
+  var toks = tokens(state.q);
+  var vis = STEPS.filter(function (s) { return state.on[s.ph] && matches(s, toks); });
+  var visSet = {}; vis.forEach(function (s) { visSet[s.n] = 1; });
+  var html = "", last = "";
+  vis.forEach(function (s) {
+    if (s.ph !== last) { last = s.ph; html += '<div class="phase-h"><i style="background:' + PH[s.ph].col + '"></i>' + esc(PH[s.ph].name) + ' <small>' + esc(PH[s.ph].lvl) + '</small></div>'; }
+    var open = (s.n === state.sel) || (toks.length > 0 && vis.length <= 6);
+    var isDone = !!done[s.n];
+    html += '<article class="step' + (open ? " open" : "") + (s.n === state.sel ? " sel" : "") + (isDone ? " done" : "") + '" id="s' + s.n + '">' +
+      '<button class="sum" type="button" data-n="' + s.n + '" aria-expanded="' + open + '">' +
+      '<span class="num" style="background:' + PH[s.ph].col + '">' + s.n + '</span>' +
+      '<span><b>' + hl(s.t, toks) + '</b><small>' + hl(s.zone, toks) + '</small></span>' +
+      '<span class="meta">' + (s.ref ? s.ref + " · " : "") + 'niv. ' + esc(s.lvl) + '</span></button>' +
+      '<div class="detail">' +
+      '<p>' + (s.ref ? '<span class="tag b">Carte ' + s.ref + '</span>' : '<span class="tag b">Hors carte</span>') + (s.verify ? '<span class="tag v">à vérifier</span>' : "") + '</p>' +
+      (s.access ? '<p><b>Accès :</b> ' + hl(s.access, toks) + '</p>' : "") +
+      '<h4>Site de grâce / repère</h4><p>' + hl(s.grace, toks) + '</p>' +
+      (s.boss ? '<h4>Boss</h4><p>' + hl(s.boss, toks) + '</p>' : "") +
+      '<h4>À faire</h4>' + ul(s.go, toks) +
+      '<h4>À récupérer</h4>' + ul(s.get, toks) +
+      (s.warn ? '<div class="hint"><b class="warn">Attention.</b> ' + hl(s.warn, toks) + '</div>' : "") +
+      (s.tip ? '<div class="hint">' + hl(s.tip, toks) + '</div>' : "") +
+      '<label class="chk"><input type="checkbox" data-done="' + s.n + '"' + (isDone ? " checked" : "") + '> Étape terminée</label>' +
+      '</div></article>';
+  });
+  list.innerHTML = vis.length ? html : '<div class="empty">Aucune étape ne correspond. Essaie « Rennala », « Graine », « D3 » ou efface les filtres.</div>';
+  var ms = svg.querySelectorAll(".mk");
+  for (var i = 0; i < ms.length; i++) {
+    var n = +ms[i].getAttribute("data-n"), c = ms[i].classList;
+    c.toggle("dim", !visSet[n]); c.toggle("sel", n === state.sel); c.toggle("done", !!done[n]); c.toggle("here", n === HERE);
+  }
+  var d = STEPS.filter(function (s) { return done[s.n]; }).length;
+  document.getElementById("ptxt").textContent = d + " / " + STEPS.length + " étapes";
+  document.getElementById("pbar").style.width = (100 * d / STEPS.length) + "%";
+  document.getElementById("n-route").textContent = toks.length ? vis.length : "";
+  renderGloss();
+}
+list.addEventListener("click", function (e) {
+  var b = e.target.closest(".sum"); if (b) { select(+b.getAttribute("data-n"), false); return; }
+});
+list.addEventListener("change", function (e) {
+  var c = e.target.closest("[data-done]"); if (!c) return; var n = +c.getAttribute("data-done");
+  if (c.checked) { done[n] = 1; var nx = STEPS.filter(function (s) { return !done[s.n] && s.n > n; })[0]; if (nx) { HERE = nx.n; try { localStorage.setItem(LS + "-here", String(HERE)); } catch (er) {} } } else delete done[n];
+  saveDone(done);
+  var keep = state.sel; render(); state.sel = keep;
+});
+function select(n, fromMap) {
+  var same = state.sel === n && !fromMap;
+  state.sel = same ? 0 : n;
+  render();
+  if (!same) {
+    var s = STEPS[n - 1];
+    if (vb.w < 1000 && !s.sub) zoom(1, s.x, s.y);
+    var card = document.getElementById("s" + n);
+    if (card && fromMap) card.scrollIntoView({ block: "center" });
+  }
+}
+
+/* ---------- glossaire ---------- */
+function renderGloss() {
+  var toks = tokens(state.q);
+  var gl = GLOSS.filter(function (g) { var h = norm(g.join(" ")); return toks.every(function (t) { return h.indexOf(t) >= 0; }); });
+  document.getElementById("gl").innerHTML = gl.map(function (g) { return "<div><b>" + hl(g[0], toks) + "</b><em>" + hl(g[1], toks) + "</em><span>" + hl(g[2], toks) + "</span></div>"; }).join("");
+  document.getElementById("glempty").hidden = gl.length > 0;
+  document.getElementById("n-gloss").textContent = toks.length ? gl.length : "";
+}
+
+/* ---------- recherche et onglets ---------- */
+var q = document.getElementById("q"), qx = document.getElementById("qx");
+q.addEventListener("input", function () { state.q = q.value; qx.hidden = !q.value; render(); });
+qx.onclick = function () { q.value = ""; state.q = ""; qx.hidden = true; render(); q.focus(); };
+var tabs = document.querySelectorAll("nav.tabs button");
+function showTab(id) {
+  tabs.forEach(function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-tab") === id)); });
+  ["route", "perso", "gloss"].forEach(function (p) { document.getElementById("pane-" + p).hidden = p !== id; });
+}
+tabs.forEach(function (b) { b.onclick = function () { showTab(b.getAttribute("data-tab")); }; });
+q.addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && state.q) { var first = STEPS.filter(function (s) { return matches(s, tokens(state.q)); })[0]; if (first) { showTab("route"); select(first.n, true); } else showTab("gloss"); }
+});
+
+drawMap();
+render();
+})();
+</script>
+</body>
+</html>
