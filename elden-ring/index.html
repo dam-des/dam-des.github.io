@@ -140,6 +140,22 @@ tr.now td { background: var(--gold-soft); }
 .gl em { color: var(--muted); font-style: normal; font-size: .85rem; display: block; }
 .gl span { font-size: .92rem; }
 .warn { color: var(--warn); font-weight: 600; }
+
+.maplist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.maplist button { border: 1px solid var(--line); background: var(--panel2); border-radius: 6px; padding: 6px 12px; }
+.maplist button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); font-weight: 600; }
+.mrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.mrow select, .mrow input[type="text"] { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-width: 0; max-width: 100%; }
+.btn { border: 1px solid var(--line); background: var(--panel2); border-radius: 6px; padding: 7px 12px; }
+.btn[aria-pressed="true"] { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); font-weight: 600; }
+.vp { position: relative; height: min(72vh, 760px); overflow: hidden; background: var(--sea); border: 1px solid var(--line); border-radius: 8px; touch-action: none; cursor: grab; }
+.vp.pin { cursor: crosshair; }
+.stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.pinm { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 700 12px var(--font-m); border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.55); transform: scale(var(--inv, 1)); cursor: pointer; }
+.pinm.sel { box-shadow: 0 0 0 3px var(--gold), 0 0 0 5px rgba(0,0,0,.55); }
+.pinm.dim { opacity: .2; }
+#pininfo { margin-top: 10px; }
 footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70ch; }
 </style>
 </head>
@@ -157,6 +173,7 @@ footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70
     <nav class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="route">Route &amp; carte<span class="n" id="n-route"></span></button>
       <button role="tab" aria-selected="false" data-tab="perso">Mon samouraï</button>
+      <button role="tab" aria-selected="false" data-tab="maps">Mes cartes</button>
       <button role="tab" aria-selected="false" data-tab="gloss">Glossaire FR / EN<span class="n" id="n-gloss"></span></button>
     </nav>
   </div>
@@ -169,7 +186,7 @@ footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70
       <div class="maptools" id="chips"></div>
       <svg class="map" id="map" viewBox="0 0 1000 700" role="img" aria-label="Carte schématique des Terres Intermédiaires avec les étapes numérotées"></svg>
       <div class="maptools" style="margin-top:8px">
-        <span class="note" style="margin:0">Carte schématique (pas la vraie carte). Pour te repérer en jeu, utilise « Repères sur le terrain » dans chaque étape.</span>
+        <span class="note" style="margin:0">Carte schématique. Pour la vraie carte, charge tes captures dans « Mes cartes ».</span>
         <div class="zoom"><button type="button" id="zin" aria-label="Zoom avant">+</button><button type="button" id="zout" aria-label="Zoom arrière">−</button><button type="button" id="zr" aria-label="Réinitialiser la carte">⟲</button></div>
       </div>
     </div>
@@ -236,6 +253,34 @@ footer { margin-top: 30px; color: var(--muted); font-size: .82rem; max-width: 70
         <li>La carte zoomée sur ta position avec les sites de grâce visibles.</li>
         <li>Les boss déjà battus (Margit, Godrick, Loretta, Rennala, Radahn…).</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+
+<section class="pane" id="pane-maps" hidden>
+  <div class="doc" style="max-width:1100px">
+    <div class="card">
+      <h2>Mes cartes</h2>
+      <p>Charge tes captures de la carte du jeu. Elles restent dans ce navigateur, sur cet appareil : elles ne sont pas envoyées et ne sont pas publiées avec la page. Ensuite, pose sur chaque carte les numéros des étapes.</p>
+      <div class="mrow"><input id="mapfile" type="file" accept="image/*" multiple aria-label="Choisir des cartes"></div>
+      <div class="maplist" id="maplist"></div>
+      <p class="note" id="mapmsg"></p>
+    </div>
+    <div class="card" id="mapview" hidden>
+      <div class="mrow">
+        <input id="mapname" type="text" aria-label="Nom de la carte" placeholder="Nom de la carte">
+        <select id="pinstep" aria-label="Étape à placer"></select>
+        <button class="btn" type="button" id="pinmode" aria-pressed="false">Poser le repère</button>
+        <button class="btn" type="button" id="pindel">Retirer le repère</button>
+        <button class="btn" type="button" id="mzin" aria-label="Zoom avant">+</button>
+        <button class="btn" type="button" id="mzout" aria-label="Zoom arrière">−</button>
+        <button class="btn" type="button" id="mzr" aria-label="Recentrer">⟲</button>
+        <button class="btn" type="button" id="mapdel">Supprimer la carte</button>
+      </div>
+      <p class="note" style="margin:0 0 8px">Choisis une étape, appuie sur « Poser le repère », puis touche l'endroit sur la carte. Glisse pour déplacer, pince ou molette pour zoomer.</p>
+      <div class="vp" id="vp"><div class="stage" id="stage"><img id="mapimg" alt="Carte chargée"><div id="pins"></div></div></div>
+      <div id="pininfo" class="hint" hidden></div>
     </div>
   </div>
 </section>
@@ -620,12 +665,147 @@ qx.onclick = function () { q.value = ""; state.q = ""; qx.hidden = true; render(
 var tabs = document.querySelectorAll("nav.tabs button");
 function showTab(id) {
   tabs.forEach(function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-tab") === id)); });
-  ["route", "perso", "gloss"].forEach(function (p) { document.getElementById("pane-" + p).hidden = p !== id; });
+  ["route", "perso", "maps", "gloss"].forEach(function (p) { document.getElementById("pane-" + p).hidden = p !== id; });
 }
 tabs.forEach(function (b) { b.onclick = function () { showTab(b.getAttribute("data-tab")); }; });
 q.addEventListener("keydown", function (e) {
   if (e.key === "Enter" && state.q) { var first = STEPS.filter(function (s) { return matches(s, tokens(state.q)); })[0]; if (first) { showTab("route"); select(first.n, true); } else showTab("gloss"); }
 });
+
+
+/* ---------- mes cartes (locales) ---------- */
+var DBN = "er-maps", maps = [], curMap = null, pins = {};
+try { pins = JSON.parse(localStorage.getItem(LS + "-pins") || "{}") || {}; } catch (e) { pins = {}; }
+function savePins() { try { localStorage.setItem(LS + "-pins", JSON.stringify(pins)); } catch (e) {} }
+function idb() {
+  return new Promise(function (ok, ko) {
+    if (!window.indexedDB) { ko(); return; }
+    var r = indexedDB.open(DBN, 1);
+    r.onupgradeneeded = function () { r.result.createObjectStore("maps", { keyPath: "id" }); };
+    r.onsuccess = function () { ok(r.result); }; r.onerror = function () { ko(r.error); };
+  });
+}
+function idbAll() { return idb().then(function (d) { return new Promise(function (ok, ko) { var q = d.transaction("maps").objectStore("maps").getAll(); q.onsuccess = function () { ok(q.result || []); }; q.onerror = ko; }); }); }
+function idbPut(o) { return idb().then(function (d) { return new Promise(function (ok, ko) { var t = d.transaction("maps", "readwrite"); t.objectStore("maps").put(o); t.oncomplete = ok; t.onerror = ko; }); }); }
+function idbDel(id) { return idb().then(function (d) { return new Promise(function (ok, ko) { var t = d.transaction("maps", "readwrite"); t.objectStore("maps").delete(id); t.oncomplete = ok; t.onerror = ko; }); }); }
+var mmsg = document.getElementById("mapmsg");
+var vp = document.getElementById("vp"), stage = document.getElementById("stage"), mimg = document.getElementById("mapimg"), pinsEl = document.getElementById("pins");
+var mv = { s: 1, x: 0, y: 0 }, pinOn = false, url = null;
+
+function fillSteps() {
+  var sel = document.getElementById("pinstep"), keep = sel.value || String(state.sel || 1), mp = (curMap && pins[curMap.id]) || {};
+  sel.innerHTML = STEPS.map(function (st) { return '<option value="' + st.n + '">' + st.n + ". " + esc(st.t) + (mp[st.n] ? "  ✓" : "") + "</option>"; }).join("");
+  sel.value = keep;
+}
+function listMaps() {
+  var l = document.getElementById("maplist");
+  l.innerHTML = maps.map(function (m) { return '<button type="button" data-id="' + esc(m.id) + '" aria-pressed="' + (curMap && curMap.id === m.id) + '">' + esc(m.name) + "</button>"; }).join("");
+  mmsg.textContent = maps.length ? "" : "Aucune carte chargée pour l'instant.";
+}
+function applyMV() {
+  stage.style.transform = "translate(" + mv.x + "px," + mv.y + "px) scale(" + mv.s + ")";
+  stage.style.setProperty("--inv", String(1 / mv.s));
+}
+function fitMap() {
+  stage.style.width = vp.clientWidth + "px";
+  mv = { s: 1, x: 0, y: 0 }; applyMV();
+}
+function drawPins() {
+  var mp = (curMap && pins[curMap.id]) || {}, toks = tokens(state.q), h = "";
+  Object.keys(mp).forEach(function (k) {
+    var st = STEPS[+k - 1]; if (!st) return;
+    var dim = toks.length && !matches(st, toks);
+    h += '<div class="pinm' + (+k === state.sel ? " sel" : "") + (dim ? " dim" : "") + '" data-n="' + k + '" style="left:' + (mp[k][0] * 100) + '%;top:' + (mp[k][1] * 100) + '%;background:' + PH[st.ph].col + '" title="' + esc(st.t) + '">' + k + "</div>";
+  });
+  pinsEl.innerHTML = h;
+}
+function showInfo(n) {
+  var st = STEPS[n - 1], box = document.getElementById("pininfo");
+  if (!st) { box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = "<b>" + st.n + ". " + esc(st.t) + "</b> · " + esc(st.zone) + "<br>" + esc(st.grace) + (st.near && st.near.length ? "<ul>" + st.near.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "");
+}
+function openMap(id) {
+  curMap = maps.filter(function (m) { return m.id === id; })[0]; if (!curMap) return;
+  if (url) URL.revokeObjectURL(url);
+  url = URL.createObjectURL(curMap.blob);
+  mimg.onload = function () { fitMap(); drawPins(); };
+  mimg.src = url;
+  document.getElementById("mapview").hidden = false;
+  document.getElementById("mapname").value = curMap.name;
+  fillSteps(); listMaps(); drawPins();
+}
+document.getElementById("mapfile").addEventListener("change", function (e) {
+  var files = Array.prototype.slice.call(e.target.files || []); if (!files.length) return;
+  var jobs = files.map(function (f, i) {
+    var o = { id: "m" + Date.now() + "-" + i, name: f.name.replace(/\.[a-z0-9]+$/i, ""), blob: f };
+    return idbPut(o).then(function () { maps.push(o); }, function () { maps.push(o); mmsg.textContent = "Stockage local indisponible : les cartes ne seront pas gardées après fermeture."; });
+  });
+  Promise.all(jobs).then(function () { listMaps(); openMap(maps[maps.length - 1].id); e.target.value = ""; });
+});
+document.getElementById("maplist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) openMap(b.getAttribute("data-id")); });
+document.getElementById("mapname").addEventListener("input", function (e) { if (!curMap) return; curMap.name = e.target.value || "Carte"; idbPut(curMap).catch(function () {}); listMaps(); });
+document.getElementById("mapdel").onclick = function () {
+  if (!curMap) return; var id = curMap.id;
+  idbDel(id).catch(function () {}); delete pins[id]; savePins();
+  maps = maps.filter(function (m) { return m.id !== id; }); curMap = null;
+  document.getElementById("mapview").hidden = true; listMaps();
+};
+document.getElementById("pinmode").onclick = function () { pinOn = !pinOn; this.setAttribute("aria-pressed", String(pinOn)); vp.classList.toggle("pin", pinOn); };
+document.getElementById("pindel").onclick = function () {
+  if (!curMap) return; var n = document.getElementById("pinstep").value;
+  if (pins[curMap.id]) { delete pins[curMap.id][n]; savePins(); } fillSteps(); drawPins();
+};
+document.getElementById("pinstep").addEventListener("change", function () { var n = +this.value; state.sel = n; render(); drawPins(); showInfo(n); });
+function zoomAt(f, cx, cy) {
+  var ns = Math.max(1, Math.min(8, mv.s * f)), r = ns / mv.s;
+  mv.x = cx - (cx - mv.x) * r; mv.y = cy - (cy - mv.y) * r; mv.s = ns; applyMV();
+}
+document.getElementById("mzin").onclick = function () { zoomAt(1.4, vp.clientWidth / 2, vp.clientHeight / 2); };
+document.getElementById("mzout").onclick = function () { zoomAt(1 / 1.4, vp.clientWidth / 2, vp.clientHeight / 2); };
+document.getElementById("mzr").onclick = fitMap;
+vp.addEventListener("wheel", function (e) { e.preventDefault(); var r = vp.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+var ptrs = {}, moved = false, pinch0 = 0, down = null;
+vp.addEventListener("pointerdown", function (e) {
+  vp.setPointerCapture(e.pointerId); ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+  moved = false; down = { x: e.clientX, y: e.clientY, tx: mv.x, ty: mv.y, target: e.target };
+  var ks = Object.keys(ptrs); if (ks.length === 2) { pinch0 = Math.hypot(ptrs[ks[0]].x - ptrs[ks[1]].x, ptrs[ks[0]].y - ptrs[ks[1]].y); }
+});
+vp.addEventListener("pointermove", function (e) {
+  if (!ptrs[e.pointerId]) return;
+  var ks = Object.keys(ptrs);
+  if (ks.length === 2) {
+    ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var d = Math.hypot(ptrs[ks[0]].x - ptrs[ks[1]].x, ptrs[ks[0]].y - ptrs[ks[1]].y);
+    if (pinch0) { var r = vp.getBoundingClientRect(); zoomAt(d / pinch0, (ptrs[ks[0]].x + ptrs[ks[1]].x) / 2 - r.left, (ptrs[ks[0]].y + ptrs[ks[1]].y) / 2 - r.top); }
+    pinch0 = d; moved = true; return;
+  }
+  ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+  if (!down) return;
+  var dx = e.clientX - down.x, dy = e.clientY - down.y;
+  if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+  if (moved) { mv.x = down.tx + dx; mv.y = down.ty + dy; applyMV(); }
+});
+function endPtr(e) {
+  var wasOne = Object.keys(ptrs).length === 1; delete ptrs[e.pointerId]; pinch0 = 0;
+  if (!wasOne || moved || !down) { down = null; return; }
+  var t = e.target && e.target.closest ? e.target.closest(".pinm") : null;
+  if (t) { var n = +t.getAttribute("data-n"); state.sel = n; render(); drawPins(); showInfo(n); document.getElementById("pinstep").value = String(n); down = null; return; }
+  if (pinOn && curMap) {
+    var rc = stage.getBoundingClientRect(), x = (e.clientX - rc.left) / rc.width, y = (e.clientY - rc.top) / rc.height;
+    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+      var n2 = document.getElementById("pinstep").value;
+      pins[curMap.id] = pins[curMap.id] || {}; pins[curMap.id][n2] = [Math.round(x * 10000) / 10000, Math.round(y * 10000) / 10000]; savePins();
+      pinOn = false; document.getElementById("pinmode").setAttribute("aria-pressed", "false"); vp.classList.remove("pin");
+      state.sel = +n2; render(); fillSteps(); document.getElementById("pinstep").value = n2; drawPins(); showInfo(+n2);
+    }
+  }
+  down = null;
+}
+vp.addEventListener("pointerup", endPtr);
+vp.addEventListener("pointercancel", function (e) { delete ptrs[e.pointerId]; down = null; });
+window.addEventListener("resize", function () { if (curMap && !document.getElementById("mapview").hidden && mv.s === 1) fitMap(); });
+idbAll().then(function (all) { maps = all; listMaps(); }, function () { listMaps(); });
 
 drawMap();
 render();
