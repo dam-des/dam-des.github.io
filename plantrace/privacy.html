@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité de Plantrace</title>
+<style>
+  :root { color-scheme: light dark; --fg:#1b1f1e; --bg:#fafaf8; --accent:#1F5F51; --todo-bg:#fff3b0; --todo-fg:#5c3b00; }
+  @media (prefers-color-scheme: dark) { :root { --fg:#e8ecea; --bg:#14181a; --accent:#6fc2ad; --todo-bg:#5c4a00; --todo-fg:#fff3b0; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:44rem; margin:0 auto; padding:1.5rem 1rem 3rem; }
+  h1 { color:var(--accent); font-size:1.8rem; line-height:1.25; }
+  h2 { color:var(--accent); font-size:1.3rem; margin-top:2rem; }
+  h3 { font-size:1.1rem; margin-top:1.5rem; }
+  a { color:var(--accent); overflow-wrap:anywhere; }
+  .todo { background:var(--todo-bg); color:var(--todo-fg); font-weight:700; padding:0 .25em; border-radius:3px; outline:2px dashed #d99a00; }
+  .draft { border:2px solid #d99a00; background:var(--todo-bg); color:var(--todo-fg); padding:.75rem 1rem; border-radius:6px; }
+  footer { margin-top:2.5rem; font-size:.9rem; opacity:.8; }
+</style>
+</head>
+<body>
+<main>
+<h1>Politique de confidentialité de Plantrace</h1>
+
+<p><strong>Date de dernière mise à jour</strong> : 20 novembre 2026</p>
+
+<h2 id="s1">1. Qui sommes-nous</h2>
+<p>Plantrace est une application mobile de dessin de plans de pièces, éditée par :
+<strong>DamDes Studio</strong>.</p>
+<p>Contact pour toute question relative à vos données :
+<strong>damdes-studio@hotmail.com</strong>.</p>
+
+<h2 id="s2">2. Ce que Plantrace ne collecte pas</h2>
+<ul>
+<li><strong>Vos plans restent sur votre appareil.</strong> Ils sont enregistrés uniquement dans l'espace de
+stockage de l'application, sur votre téléphone. Ils ne sont envoyés à aucun serveur.</li>
+<li><strong>Aucun compte</strong> : il n'y a ni inscription, ni connexion, ni profil.</li>
+<li><strong>Aucun serveur Plantrace</strong> : l'éditeur ne gère aucun serveur qui reçoit vos données et ne
+collecte, ne stocke et ne reçoit directement aucune donnée personnelle vous concernant.</li>
+<li>Aucune analyse d'usage ni outil de suivi des plantages n'est intégré par l'éditeur.</li>
+<li>L'application ne demande aucune permission sensible (ni localisation, ni contacts, ni photos, ni
+micro). Elle demande l'accès à la caméra uniquement si vous lancez un scan ou une mesure de
+pièce (voir ci-dessous). Elle utilise l'accès au réseau et, sur Android, déclare l'accès à
+l'identifiant publicitaire (AD_ID), uniquement pour l'affichage des publicités (voir § 3).</li>
+<li>Vos exports (PDF, PNG) ne quittent l'appareil que si vous les partagez vous-même via la
+feuille de partage de votre téléphone.</li>
+</ul>
+
+<h3 id="s2b">Caméra et scan de pièce</h3>
+<ul>
+<li>La <strong>caméra</strong> et les capteurs de profondeur et de mouvement de votre appareil (LiDAR, ARKit sur
+iPhone ; ARCore sur Android) ne sont utilisés que lorsque vous choisissez de <strong>scanner ou de mesurer
+une pièce</strong>, jamais en arrière-plan ni à l'ouverture de l'application. La demande d'autorisation de
+la caméra apparaît à ce moment-là ; vous pouvez la refuser ou la retirer à tout moment dans les
+réglages de votre téléphone, et dessiner vos pièces à la main.</li>
+<li>Les images et les données du scan sont <strong>traitées localement sur votre appareil</strong>. Elles ne sont
+<strong>ni envoyées, ni enregistrées</strong> hors de votre appareil, et Plantrace n'en conserve aucune image :
+seules les cotes obtenues (murs, portes, fenêtres) sont enregistrées dans votre plan, comme si vous
+les aviez dessinées.</li>
+<li>Le <strong>dernier scan</strong> (géométrie brute : murs, portes, fenêtres ; aucune image) est conservé <strong>localement</strong> sur votre appareil pour diagnostic et peut être partagé volontairement par vous via la feuille de partage. Rien n'est envoyé automatiquement.</li>
+<li>En cas d'<strong>échec d'un scan</strong>, un petit <strong>diagnostic</strong> (raison de l'échec, durée, état thermique et mode économie d'énergie de l'appareil, niveau de batterie, nombre de murs/portes/objets vus ; aucune image ni géométrie) est conservé <strong>localement</strong>, écrasé à chaque échec, et ne peut être partagé que volontairement par vous. Rien n'est envoyé automatiquement.</li>
+<li>Sur Android, la mesure utilise <strong>Google Play Services for AR (ARCore)</strong>, fourni par Google, qui peut
+être installé ou mis à jour par Google Play. Cette application s'exécute sur Google Play Services
+for AR (ARCore), qui est fourni par Google et régi par la
+<a href="https://policies.google.com/privacy">Politique de confidentialité de Google</a>
+(https://policies.google.com/privacy). Plus d'informations sur ARCore :
+https://play.google.com/store/apps/details?id=com.google.ar.core.</li>
+<li>La précision du scan est indicative : vérifiez les cotes avant de vous y fier.</li>
+</ul>
+
+<h2 id="s3">3. Publicités (Google AdMob)</h2>
+<p>Plantrace est gratuite et affiche des publicités fournies par <strong>Google AdMob</strong> (Google Ireland
+Limited / Google LLC). Pour les afficher, le kit de développement publicitaire de Google peut
+traiter, sur votre appareil et sur les serveurs de Google :</p>
+<ul>
+<li>l'<strong>identifiant publicitaire</strong> de votre appareil (IDFA sur iOS, ID publicitaire Android) ;</li>
+<li>votre adresse IP et des informations techniques sur l'appareil (modèle, système, langue) ;</li>
+<li>des données d'interaction avec les publicités (affichage, clic) et des journaux de diagnostic
+(performance, plantages liés au SDK publicitaire).</li>
+</ul>
+<p>Ces données sont traitées par Google en tant que responsable de traitement pour la diffusion et
+la mesure des publicités. L'éditeur de Plantrace n'y a pas accès sous forme individuelle. Ces données
+peuvent être transférées hors de l'Union européenne (notamment vers les États-Unis) par Google, selon
+les garanties décrites dans sa politique. Pour en savoir plus :
+<a href="https://policies.google.com/privacy">https://policies.google.com/privacy</a> et
+<a href="https://policies.google.com/technologies/ads">https://policies.google.com/technologies/ads</a>.</p>
+
+<h3>Consentement et choix</h3>
+<ul>
+<li><strong>Espace économique européen, Royaume-Uni, Suisse</strong> : au premier lancement, un formulaire de
+consentement (plateforme Google UMP, conforme au RGPD) vous demande votre choix <strong>avant</strong> toute
+requête publicitaire. Si vous refusez, seules des publicités <strong>non personnalisées</strong> peuvent
+être affichées.</li>
+<li><strong>iOS</strong> : lorsque c'est requis, l'application affiche la demande système
+« App Tracking Transparency » (ATT). Si vous refusez, l'identifiant publicitaire n'est pas
+transmis et les publicités ne sont pas personnalisées par suivi.</li>
+<li><strong>Modifier vos choix à tout moment</strong> : dans l'application, ouvrez <strong>Réglages &gt; Gérer mes choix
+de publicité</strong> (visible lorsque la réglementation l'exige). Vous pouvez aussi, sur iOS,
+<em>Réglages du téléphone &gt; Confidentialité et sécurité &gt; Suivi</em>, et sur Android,
+<em>Paramètres &gt; Google &gt; Annonces</em> (supprimer ou réinitialiser l'identifiant publicitaire).</li>
+<li>Les contenus publicitaires sont limités à une classification tous publics (PG).</li>
+</ul>
+
+<h2 id="s4">4. Public concerné</h2>
+<p>Plantrace <strong>n'est pas destinée aux enfants</strong>. Elle ne s'adresse pas aux personnes de moins de
+16 ans et n'est pas conçue pour collecter leurs données.</p>
+
+<h2 id="s5">5. Durée de conservation</h2>
+<p>L'éditeur ne conserve aucune donnée vous concernant. Vos plans restent sur votre appareil
+jusqu'à leur suppression par vous ou la désinstallation de l'application. Les durées de
+conservation des données traitées par Google sont celles décrites dans sa politique de
+confidentialité.</p>
+
+<h2 id="s6">6. Vos droits (RGPD)</h2>
+<p>Vous disposez des droits d'accès, de rectification, d'effacement, de limitation, d'opposition et
+de portabilité, ainsi que du droit de retirer votre consentement à tout moment (voir « Consentement
+et choix »). Comme l'éditeur ne détient aucune donnée vous concernant, ces droits s'exercent
+principalement auprès de Google pour les données publicitaires
+(<a href="https://myaccount.google.com">https://myaccount.google.com</a>).
+Pour toute question, écrivez à <strong>damdes-studio@hotmail.com</strong>.
+Vous pouvez aussi introduire une réclamation auprès de la CNIL
+(<a href="https://www.cnil.fr">https://www.cnil.fr</a>) ou de l'autorité de
+protection des données de votre pays.</p>
+
+<h2 id="s7">7. Sécurité</h2>
+<p>Les échanges avec les services publicitaires de Google se font via des connexions chiffrées
+(HTTPS). Vos plans sont stockés dans l'espace privé de l'application sur votre appareil.</p>
+
+<h2 id="s8">8. Modifications</h2>
+<p>Cette politique peut évoluer, notamment si de nouvelles fonctionnalités sont ajoutées. La date de
+mise à jour figure en haut de la page. Toute modification importante sera indiquée dans l'application
+ou sur la fiche de l'application.</p>
+
+<footer><a href="index.html">Plantrace</a></footer>
+</main>
+</body>
+</html>
