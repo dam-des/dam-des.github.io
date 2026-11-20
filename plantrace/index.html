@@ -3,21 +3,231 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plantrace</title>
+<title>Plantrace : plan de pièce, cotes et surfaces</title>
+<meta name="description" content="Scannez ou dessinez le plan de vos pièces avec cotes et surfaces, puis exportez-le en PDF ou PNG. Gratuit, sans filigrane, sans compte.">
 <style>
-  :root { color-scheme: light dark; --fg:#1b1f1e; --bg:#fafaf8; --accent:#1F5F51; }
-  @media (prefers-color-scheme: dark) { :root { --fg:#e8ecea; --bg:#14181a; --accent:#6fc2ad; } }
-  body { margin:0; background:var(--bg); color:var(--fg); font:18px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-  main { max-width:40rem; margin:0 auto; padding:3rem 1rem; }
-  h1 { color:var(--accent); font-size:2.2rem; margin-bottom:.25rem; }
+  :root {
+    color-scheme: light dark;
+    --fg:#1b1f1e; --muted:#5a6663; --bg:#fafaf8; --card:#ffffff; --line:#e3e6e3;
+    --accent:#1F5F51; --accent-fg:#ffffff; --tint:#e8f1ee;
+    --wall:#2a2e2d; --floor:#f2efe8; --glass:#4a8fc2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg:#e8ecea; --muted:#9aa6a3; --bg:#14181a; --card:#1c2224; --line:#2b3336;
+      --accent:#6fc2ad; --accent-fg:#0c1512; --tint:#1a2a26;
+      --wall:#d9dedc; --floor:#222a2c; --glass:#6fb2e0;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+    font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
   a { color:var(--accent); }
+  .wrap { max-width:68rem; margin:0 auto; padding:0 1.25rem; }
+  header.top { display:flex; align-items:center; gap:.7rem; padding:1.1rem 0; }
+  header.top img { width:40px; height:40px; border-radius:10px; }
+  header.top b { font-size:1.2rem; letter-spacing:.2px; }
+  header.top nav { margin-left:auto; display:flex; gap:1.1rem; font-size:.95rem; }
+  header.top nav a { text-decoration:none; color:var(--muted); }
+  header.top nav a:hover { color:var(--accent); }
+
+  .hero { display:grid; grid-template-columns:1.05fr .95fr; gap:2.5rem; align-items:center; padding:2.5rem 0 3.5rem; }
+  .eyebrow { display:inline-block; background:var(--tint); color:var(--accent); font-weight:600;
+    font-size:.85rem; padding:.25rem .75rem; border-radius:99px; }
+  h1 { font-size:clamp(2rem,5vw,3.2rem); line-height:1.1; margin:.9rem 0 1rem; letter-spacing:-.5px; }
+  h1 em { font-style:normal; color:var(--accent); }
+  .lead { font-size:1.15rem; color:var(--muted); max-width:34rem; margin:0 0 1.6rem; }
+  .stores { display:flex; flex-wrap:wrap; gap:.75rem; }
+  .store { display:inline-flex; flex-direction:column; line-height:1.2; padding:.6rem 1.2rem;
+    border-radius:12px; text-decoration:none; background:var(--accent); color:var(--accent-fg); font-weight:700; }
+  .store small { font-weight:500; font-size:.72rem; opacity:.85; }
+  .store.is-soon { background:transparent; color:var(--muted); border:1.5px dashed var(--line); cursor:default; }
+  .badges { display:flex; flex-wrap:wrap; gap:.5rem 1.1rem; margin:1.4rem 0 0; padding:0; list-style:none;
+    color:var(--muted); font-size:.92rem; }
+  .badges li::before { content:"✓ "; color:var(--accent); font-weight:700; }
+
+  .hero-art { background:var(--card); border:1px solid var(--line); border-radius:24px; padding:1rem;
+    box-shadow:0 20px 50px -25px rgba(0,0,0,.35); }
+  .hero-art svg { width:100%; height:auto; display:block; }
+  .wall { stroke:var(--wall); stroke-width:7; fill:none; stroke-linecap:square; }
+  .floor { fill:var(--floor); }
+  .thin { stroke:var(--muted); stroke-width:1.5; fill:none; }
+  .glass { stroke:var(--glass); stroke-width:5; }
+  .dim { fill:var(--muted); font:600 12px system-ui,sans-serif; }
+  .room { fill:var(--fg); font:700 13px system-ui,sans-serif; }
+  .furn { fill:var(--card); stroke:var(--muted); stroke-width:1.5; }
+
+  section { padding:3rem 0; }
+  h2 { font-size:clamp(1.5rem,3.5vw,2.1rem); margin:0 0 .5rem; letter-spacing:-.3px; }
+  .sub { color:var(--muted); margin:0 0 2rem; max-width:40rem; }
+  .features { display:grid; grid-template-columns:repeat(auto-fit,minmax(16rem,1fr)); gap:1.1rem; }
+  .feat { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:1.3rem; }
+  .feat .ico { width:44px; height:44px; border-radius:12px; background:var(--tint); display:grid; place-items:center; margin-bottom:.8rem; }
+  .feat svg { width:24px; height:24px; stroke:var(--accent); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .feat h3 { margin:0 0 .3rem; font-size:1.1rem; }
+  .feat p { margin:0; color:var(--muted); font-size:.95rem; }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:center; }
+  .split.rev .shot { order:2; }
+  .shot { background:#fff; border:1px solid var(--line); border-radius:20px; padding:1rem;
+    box-shadow:0 20px 50px -30px rgba(0,0,0,.35); }
+  .shot img { width:100%; height:auto; display:block; border-radius:10px; }
+  .shot.stack { display:grid; gap:.5rem; }
+  .shot.stack img + img { border-top:1px solid #eee; border-radius:0 0 10px 10px; }
+  .split ul { padding-left:1.1rem; color:var(--muted); }
+  .split li { margin:.3rem 0; }
+
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(14rem,1fr)); gap:1.1rem; counter-reset:s; padding:0; list-style:none; }
+  .steps li { counter-increment:s; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:1.3rem; }
+  .steps li::before { content:counter(s); display:inline-grid; place-items:center; width:2rem; height:2rem;
+    border-radius:50%; background:var(--accent); color:var(--accent-fg); font-weight:700; margin-bottom:.6rem; }
+  .steps b { display:block; }
+  .steps span { color:var(--muted); font-size:.95rem; }
+
+  .privacy { background:var(--tint); border-radius:24px; padding:2rem; }
+  .privacy p { margin:.4rem 0 0; color:var(--muted); max-width:44rem; }
+
+  footer { border-top:1px solid var(--line); margin-top:3rem; padding:2rem 0 3rem; color:var(--muted); font-size:.92rem; }
+  footer .row { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; }
+  footer p { margin:.8rem 0 0; font-size:.85rem; }
+
+  @media (max-width:52rem) {
+    .hero, .split { grid-template-columns:1fr; gap:1.5rem; }
+    .split.rev .shot { order:0; }
+    header.top nav { display:none; }
+    .hero { padding-top:1rem; }
+  }
 </style>
 </head>
 <body>
-<main>
-<h1>Plantrace</h1>
-<p>Dessinez le plan de vos pièces, simplement, directement sur votre téléphone.</p>
-<p><a href="privacy.html">Politique de confidentialité</a></p>
-</main>
+<div class="wrap">
+  <header class="top">
+    <img src="img/icon.png" alt="" width="40" height="40">
+    <b>Plantrace</b>
+    <nav><a href="#fonctions">Fonctionnalités</a><a href="#export">Export</a><a href="privacy.html">Confidentialité</a></nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Plans d'intérieur · iPhone et Android</span>
+      <h1>Le plan de vos pièces, <em>coté et prêt à partager</em>.</h1>
+      <p class="lead">Scannez ou dessinez votre logement, obtenez les cotes et les surfaces automatiquement, puis exportez en PDF ou PNG. Gratuit, sans filigrane, sans compte.</p>
+      <div class="stores">
+<!--IOS--><a class="store is-soon" aria-disabled="true"><small>Bientôt sur</small>App Store</a><!--/IOS-->
+<!--ANDROID--><a class="store is-soon" aria-disabled="true"><small>Bientôt sur</small>Google Play</a><!--/ANDROID-->
+      </div>
+      <ul class="badges">
+        <li>100 % gratuit</li><li>Sans compte</li><li>Plans gardés sur votre appareil</li>
+      </ul>
+    </div>
+    <div class="hero-art" role="img" aria-label="Illustration d'un plan d'appartement avec cotes">
+      <svg viewBox="0 0 420 340" xmlns="http://www.w3.org/2000/svg">
+        <rect class="floor" x="30" y="30" width="360" height="270"/>
+        <path class="wall" d="M30 30H390V300H30Z"/>
+        <path class="wall" d="M215 30V190M30 190H215M215 190V300"/>
+        <path class="wall" d="M215 215H390"/>
+        <!-- fenêtres -->
+        <path class="glass" d="M80 30H150M290 30H350M390 90V150M80 300H150"/>
+        <!-- portes -->
+        <path class="thin" d="M215 120A40 40 0 0 0 175 160M215 120V160"/>
+        <path class="thin" d="M300 215A38 38 0 0 1 338 253M300 215V253"/>
+        <!-- mobilier -->
+        <rect class="furn" x="48" y="48" width="100" height="44" rx="8"/>
+        <rect class="furn" x="48" y="48" width="100" height="14" rx="6"/>
+        <rect class="furn" x="250" y="60" width="90" height="60" rx="6"/>
+        <rect class="furn" x="50" y="230" width="70" height="52" rx="6"/>
+        <rect class="furn" x="250" y="250" width="110" height="36" rx="6"/>
+        <!-- libellés -->
+        <text class="room" x="62" y="128">Salon</text><text class="dim" x="62" y="146">18,4 m²</text>
+        <text class="room" x="262" y="150">Chambre</text><text class="dim" x="262" y="168">12,1 m²</text>
+        <text class="room" x="62" y="214">Cuisine</text><text class="dim" x="62" y="296" opacity="0">.</text>
+        <text class="room" x="136" y="260">Bain</text><text class="dim" x="136" y="278">5,2 m²</text>
+        <!-- cotes -->
+        <path class="thin" d="M30 16H390M30 11V21M390 11V21"/>
+        <text class="dim" x="188" y="12">6,00 m</text>
+        <path class="thin" d="M408 30V300M403 30H413M403 300H413"/>
+        <text class="dim" transform="translate(406 170) rotate(90)" text-anchor="middle">4,50 m</text>
+      </svg>
+    </div>
+  </div>
+
+  <section id="fonctions">
+    <h2>Tout pour relever une pièce</h2>
+    <p class="sub">Du croquis rapide au plan multi-niveaux, sans courbe d'apprentissage.</p>
+    <div class="features">
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V4h16v16zM4 12h8v8"/></svg></div>
+        <h3>Dessin de pièces</h3><p>Tracez mur après mur ou saisissez les dimensions. Magnétisme sur les angles, annuler/refaire, zoom à deux doigts.</p></div>
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4zM3 12l9 4 9-4M3 17l9 4 9-4"/></svg></div>
+        <h3>Plusieurs niveaux</h3><p>Rez-de-chaussée, étages, sous-sol, avec un calque léger de l'autre niveau pour caler escaliers et murs porteurs.</p></div>
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/></svg></div>
+        <h3>Scan (facultatif)</h3><p>LiDAR sur iPhone Pro, ou mesure coin par coin avec la caméra. Vérifiez et ajustez avant d'ajouter à votre plan.</p></div>
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg></div>
+        <h3>Export PDF et PNG</h3><p>PDF A4 avec échelle et tableau des surfaces, ou PNG haute définition. Sans filigrane.</p></div>
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></div>
+        <h3>Vue 3D</h3><p>Visualisez votre pièce et son mobilier en volume pour vous projeter avant d'acheter ou de déplacer.</p></div>
+      <div class="feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg></div>
+        <h3>Cotes et surfaces</h3><p>Surface et périmètre de chaque pièce, surface totale, unités métriques ou pieds et pouces.</p></div>
+    </div>
+  </section>
+
+  <section id="mobilier">
+    <div class="split">
+      <div class="shot stack">
+        <img src="img/symbols-living.png" alt="Symboles de salon : canapés, fauteuil, tables" loading="lazy">
+        <img src="img/symbols-kitchen.png" alt="Symboles de cuisine" loading="lazy">
+        <img src="img/symbols-bedroom.png" alt="Symboles de chambre : lits, armoires" loading="lazy">
+      </div>
+      <div>
+        <h2>Portes, fenêtres et mobilier</h2>
+        <p class="sub">Une bibliothèque de symboles pour meubler votre plan.</p>
+        <ul>
+          <li>Posez portes et fenêtres, réglez largeur, charnière et sens d'ouverture.</li>
+          <li>Salon, cuisine, chambre, salle de bain : des meubles aux bonnes proportions.</li>
+          <li>Pensé pour un déménagement, une rénovation ou un état des lieux.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="vue3d">
+    <div class="split rev">
+      <div class="shot"><img src="img/3d.png" alt="Pièce en 3D avec canapés, lit, table et électroménager" loading="lazy"></div>
+      <div>
+        <h2>Votre pièce en 3D</h2>
+        <p class="sub">Passez du plan à une vue en volume en un geste.</p>
+        <ul>
+          <li>Murs, sol et meubles en perspective.</li>
+          <li>Idéal pour vérifier qu'un canapé passe vraiment.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="export">
+    <h2>De la pièce au PDF en trois étapes</h2>
+    <p class="sub">Pas de compte, pas d'abonnement.</p>
+    <ol class="steps">
+      <li><b>Scannez ou dessinez</b><span>Capteur LiDAR, caméra ou dessin à la main.</span></li>
+      <li><b>Ajustez</b><span>Cotes, portes, fenêtres, mobilier, niveaux.</span></li>
+      <li><b>Exportez</b><span>PDF (une page par niveau) ou PNG, via la feuille de partage.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="privacy">
+      <h2>Vos plans restent chez vous</h2>
+      <p>Plantrace n'a pas de compte et n'envoie aucun de vos plans à un serveur. L'application est gratuite et financée par la publicité (Google AdMob), avec un formulaire de consentement au premier lancement.</p>
+      <p><a href="privacy.html">Lire la politique de confidentialité</a></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <a href="privacy.html">Politique de confidentialité</a>
+<a href="mailto:damdes-studio@hotmail.com">Contact : damdes-studio@hotmail.com</a>
+    </div>
+    <p>Plantrace fournit des plans indicatifs, non contractuels : ils ne remplacent pas un relevé professionnel. La précision d'un scan est indicative, à vérifier avant toute commande sur mesure.</p>
+  </footer>
+</div>
 </body>
 </html>
